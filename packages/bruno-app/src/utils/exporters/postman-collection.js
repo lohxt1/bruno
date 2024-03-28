@@ -49,20 +49,20 @@ export const exportCollection = (collection) => {
 
   const generateEventSection = (item) => {
     const eventArray = [];
-    if (item.request.tests.length) {
+    if (item?.request?.tests?.length) {
       eventArray.push({
         listen: 'test',
         script: {
-          exec: item.request.tests.split('\n')
+          exec: item?.request?.tests?.split('\n')
           // type: 'text/javascript'
         }
       });
     }
-    if (item.request.script.req) {
+    if (item?.request?.script?.req) {
       eventArray.push({
         listen: 'prerequest',
         script: {
-          exec: item.request.script.req.split('\n')
+          exec: item?.request?.script?.req.split('\n')
           // type: 'text/javascript'
         }
       });
@@ -172,6 +172,7 @@ export const exportCollection = (collection) => {
   };
 
   const generateRequestSection = (itemRequest) => {
+    if (!itemRequest) return;
     const requestObject = {
       method: itemRequest.method,
       header: generateHeaders(itemRequest.headers),
