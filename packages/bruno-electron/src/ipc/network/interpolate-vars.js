@@ -105,8 +105,6 @@ const interpolateVars = (request, envVars = {}, collectionVariables = {}, proces
       } catch (err) {}
     }
   } else if (request.mode === 'multipartForm') {
-    // make axios work in node using form data
-    // reference: https://github.com/axios/axios/issues/1006#issuecomment-320165427
     const form = parseAndInterpolateFormData(request?.data, request?.collectionPath);
     extend(request.headers, form.getHeaders());
     request.data = form;
