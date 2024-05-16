@@ -1,4 +1,6 @@
 const FormData = require('form-data');
+const fs = require('fs');
+const path = require('path');
 const { each, forOwn, cloneDeep, extend } = require('lodash');
 const { interpolate } = require('@usebruno/common');
 
@@ -48,6 +50,29 @@ const interpolateVars = (request, envVars = {}, collectionVariables = {}, proces
     return interpolate(str, combinedVars);
   };
 
+  const parseAndInterpolateFormData = (datas, collectionPath) => {
+    // make axios work in node using form data
+    // reference: https://github.com/axios/axios/issues/1006#issuecomment-320165427
+    const form = new FormData();
+    forOwn(datas, (value, name) => {
+      if (typeof value === 'object') {
+        const filePaths = value || [];
+        filePaths.forEach((filePath) => {
+          let trimmedFilePath = filePath.trim();
+
+          if (!path.isAbsolute(trimmedFilePath)) {
+            trimmedFilePath = path.join(collectionPath, trimmedFilePath);
+          }
+
+          form.append(name, fs.createReadStream(trimmedFilePath), path.basename(trimmedFilePath));
+        });
+      } else {
+        form.append(name, _interpolate(value));
+      }
+    });
+    return form;
+  };
+
   request.url = _interpolate(request.url);
 
   forOwn(request.headers, (value, key) => {
@@ -82,11 +107,7 @@ const interpolateVars = (request, envVars = {}, collectionVariables = {}, proces
   } else if (request.mode === 'multipartForm') {
     // make axios work in node using form data
     // reference: https://github.com/axios/axios/issues/1006#issuecomment-320165427
-    const form = new FormData();
-    forOwn(request.data, (value, name) => {
-      form.append(_interpolate(name), _interpolate(value));
-    });
-
+    const form = parseAndInterpolateFormData(request?.data, request?.collectionPath);
     extend(request.headers, form.getHeaders());
     request.data = form;
   } else {
