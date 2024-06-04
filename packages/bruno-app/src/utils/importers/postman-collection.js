@@ -369,14 +369,19 @@ Collections incomplete : ${Object.keys(translationLog || {}).length}` +
 };
 
 const importCollection = (options) => {
+  let collectionLocation;
   return new Promise((resolve, reject) => {
     fileDialog({ accept: 'application/json' })
+      .then((files) => {
+        collectionLocation = files?.[0]?.path;
+        return files;
+      })
       .then(readFile)
       .then((str) => parsePostmanCollection(str, options))
       .then(transformItemsInCollection)
       .then(hydrateSeqInCollection)
       .then(validateSchema)
-      .then((collection) => resolve({ collection, translationLog }))
+      .then((collection) => resolve({ collection, translationLog, collectionLocation }))
       .catch((err) => {
         console.log(err);
         reject(new BrunoError('Import collection failed'));

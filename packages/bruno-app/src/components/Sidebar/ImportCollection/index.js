@@ -5,8 +5,18 @@ import importInsomniaCollection from 'utils/importers/insomnia-collection';
 import importOpenapiCollection from 'utils/importers/openapi-collection';
 import { toastError } from 'utils/common/error';
 import Modal from 'components/Modal';
+import { useDispatch } from 'react-redux';
+import { toast } from 'react-hot-toast';
+import TrustCollectionModal from '../TrustCollectionModal/index';
+import { isCollectionTrusted, trustCollection } from 'providers/ReduxStore/slices/app';
 
 const ImportCollection = ({ onClose, handleSubmit }) => {
+  const dispatch = useDispatch();
+  const [importedCollection, setImportedCollection] = useState(null);
+  const [importCollectionTranslationLog, setImportCollectionTranslationLog] = useState(null);
+  const [collectionLocation, setCollectionLocation] = useState(null);
+  const [isTrustCollectionModalOpen, setIsTrustCollectionModalOpen] = useState(false);
+
   const [options, setOptions] = useState({
     enablePostmanTranslations: {
       enabled: true,
@@ -15,37 +25,65 @@ const ImportCollection = ({ onClose, handleSubmit }) => {
         "When enabled, Bruno will try as best to translate the scripts from the imported collection to Bruno's format."
     }
   });
+
+  const handleImportCollectionAfterTrustingPrompt = () => {
+    dispatch(trustCollection(collectionLocation))
+      .then(() => {
+        setIsTrustCollectionModalOpen(false);
+        toast.success('Collection trusted!');
+        handleSubmit({ collection: importedCollection, translationLog: importCollectionTranslationLog });
+      })
+      .catch((err) => {
+        console.error(err);
+        toast.error('Failed to trust collection');
+      });
+  };
+
+  const handleImportCollection = ({ collection, translationLog, collectionLocation }) => {
+    dispatch(isCollectionTrusted(collectionLocation)).then((isTrusted) => {
+      if (!isTrusted) {
+        setCollectionLocation(collectionLocation);
+        setImportedCollection(collection);
+        translationLog && setImportCollectionTranslationLog(translationLog);
+        setIsTrustCollectionModalOpen(true);
+      } else {
+        handleSubmit({ collection, translationLog });
+      }
+    });
+  };
+
   const handleImportBrunoCollection = () => {
     importBrunoCollection()
-      .then(({ collection }) => {
-        handleSubmit({ collection });
+      .then(({ collection, collectionLocation }) => {
+        handleImportCollection({ collection, collectionLocation });
       })
       .catch((err) => toastError(err, 'Import collection failed'));
   };
 
   const handleImportPostmanCollection = () => {
     importPostmanCollection(options)
-      .then(({ collection, translationLog }) => {
-        handleSubmit({ collection, translationLog });
+      .then(({ collection, translationLog, collectionLocation }) => {
+        handleImportCollection({ collection, translationLog, collectionLocation });
       })
       .catch((err) => toastError(err, 'Postman Import collection failed'));
   };
 
   const handleImportInsomniaCollection = () => {
     importInsomniaCollection()
-      .then(({ collection }) => {
-        handleSubmit({ collection });
+      .then(({ collection, collectionLocation }) => {
+        handleImportCollection({ collection, collectionLocation });
       })
       .catch((err) => toastError(err, 'Insomnia Import collection failed'));
   };
 
   const handleImportOpenapiCollection = () => {
     importOpenapiCollection()
-      .then(({ collection }) => {
-        handleSubmit({ collection });
+      .then(({ collection, collectionLocation }) => {
+        handleImportCollection({ collection, collectionLocation });
       })
       .catch((err) => toastError(err, 'OpenAPI v3 Import collection failed'));
   };
+
   const toggleOptions = (event, optionKey) => {
     setOptions({
       ...options,
@@ -69,6 +107,15 @@ const ImportCollection = ({ onClose, handleSubmit }) => {
   };
   return (
     <Modal size="sm" title="Import Collection" hideFooter={true} handleConfirm={onClose} handleCancel={onClose}>
+      {isTrustCollectionModalOpen ? (
+        <TrustCollectionModal
+          onSubmit={handleImportCollectionAfterTrustingPrompt}
+          onClose={() => {
+            toast.error('Collection not trusted! Aborting import');
+            setIsTrustCollectionModalOpen(false);
+          }}
+        />
+      ) : null}
       <div className="flex flex-col">
         <h3 className="text-sm">Select the type of your existing collection :</h3>
         <div className="mt-4 grid grid-rows-2 grid-flow-col gap-2">

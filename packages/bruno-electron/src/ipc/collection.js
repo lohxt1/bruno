@@ -15,7 +15,7 @@ const {
   searchForBruFiles,
   sanitizeDirectoryName
 } = require('../utils/filesystem');
-const { openCollectionDialog } = require('../app/collections');
+const { openCollectionDialog, openCollection } = require('../app/collections');
 const { generateUidBasedOnHash, stringifyJson, safeParseJSON, safeStringifyJSON } = require('../utils/common');
 const { moveRequestUid, deleteRequestUid } = require('../cache/requestUids');
 const { deleteCookiesForDomain, getDomainsWithCookies } = require('../utils/cookies');
@@ -29,7 +29,7 @@ const envHasSecrets = (environment = {}) => {
   return secrets && secrets.length > 0;
 };
 
-const registerRendererEventHandlers = (mainWindow, watcher, lastOpenedCollections) => {
+const registerRendererEventHandlers = (mainWindow, watcher, lastOpenedCollections, trustedCollections) => {
   // browse directory
   ipcMain.handle('renderer:browse-directory', async (event, pathname, request) => {
     try {
@@ -391,7 +391,21 @@ const registerRendererEventHandlers = (mainWindow, watcher, lastOpenedCollection
 
   ipcMain.handle('renderer:open-collection', () => {
     if (watcher && mainWindow) {
-      openCollectionDialog(mainWindow, watcher);
+      openCollectionDialog(mainWindow, trustedCollections).then(({ collectionPath, showTrustCollectionPrompt }) => {
+        if (collectionPath) {
+          if (showTrustCollectionPrompt) {
+            mainWindow.webContents.send('main:show-trust-collection-prompt', collectionPath);
+          } else {
+            openCollection(mainWindow, watcher, collectionPath);
+          }
+        }
+      });
+    }
+  });
+
+  ipcMain.handle('renderer:open-collection-by-path', async (event, collectionPath) => {
+    if (watcher && mainWindow) {
+      openCollection(mainWindow, watcher, collectionPath);
     }
   });
 
@@ -401,6 +415,19 @@ const registerRendererEventHandlers = (mainWindow, watcher, lastOpenedCollection
       watcher.removeWatcher(collectionPath, mainWindow);
       lastOpenedCollections.remove(collectionPath);
     }
+  });
+
+  ipcMain.handle('renderer:get-trusted-collections', async () => {
+    const collections = trustedCollections.getAll();
+    return collections;
+  });
+
+  ipcMain.handle('renderer:trust-collection', async (event, collectionPath) => {
+    trustedCollections.add(collectionPath);
+  });
+
+  ipcMain.handle('renderer:is-collection-trusted', async (event, collectionPath) => {
+    return trustedCollections.exists(collectionPath);
   });
 
   ipcMain.handle('renderer:import-collection', async (event, collection, collectionLocation) => {
@@ -619,10 +646,10 @@ const registerRendererEventHandlers = (mainWindow, watcher, lastOpenedCollection
   });
 };
 
-const registerMainEventHandlers = (mainWindow, watcher, lastOpenedCollections) => {
+const registerMainEventHandlers = (mainWindow, watcher, lastOpenedCollections, trustedCollections) => {
   ipcMain.on('main:open-collection', () => {
     if (watcher && mainWindow) {
-      openCollectionDialog(mainWindow, watcher);
+      openCollectionDialog(mainWindow, trustedCollections);
     }
   });
 
@@ -651,9 +678,9 @@ const registerMainEventHandlers = (mainWindow, watcher, lastOpenedCollections) =
   });
 };
 
-const registerCollectionsIpc = (mainWindow, watcher, lastOpenedCollections) => {
-  registerRendererEventHandlers(mainWindow, watcher, lastOpenedCollections);
-  registerMainEventHandlers(mainWindow, watcher, lastOpenedCollections);
+const registerCollectionsIpc = (mainWindow, watcher, lastOpenedCollections, trustedCollections) => {
+  registerRendererEventHandlers(mainWindow, watcher, lastOpenedCollections, trustedCollections);
+  registerMainEventHandlers(mainWindow, watcher, lastOpenedCollections, trustedCollections);
 };
 
 module.exports = registerCollectionsIpc;

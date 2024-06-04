@@ -72,6 +72,15 @@ export const appSlice = createSlice({
     },
     removeAllTasksFromQueue: (state) => {
       state.taskQueue = [];
+    },
+    showTrustCollectionPrompt: (state, action) => {
+      const collectionPath = action.payload;
+      state.showTrustCollectionPrompt = true;
+      state.collectionPathOfTrustCollectionPrompt = collectionPath;
+    },
+    resetTrustCollectionPrompt: (state) => {
+      state.showTrustCollectionPrompt = null;
+      state.collectionPathOfTrustCollectionPrompt = null;
     }
   }
 });
@@ -89,7 +98,9 @@ export const {
   updateCookies,
   insertTaskIntoQueue,
   removeTaskFromQueue,
-  removeAllTasksFromQueue
+  removeAllTasksFromQueue,
+  showTrustCollectionPrompt,
+  resetTrustCollectionPrompt
 } = appSlice.actions;
 
 export const savePreferences = (preferences) => (dispatch, getState) => {
@@ -120,6 +131,35 @@ export const deleteCookiesForDomain = (domain) => (dispatch, getState) => {
 export const completeQuitFlow = () => (dispatch, getState) => {
   const { ipcRenderer } = window;
   return ipcRenderer.invoke('main:complete-quit-flow');
+};
+
+export const isCollectionTrusted = (collectionLocation) => (dispatch, getState) => {
+  return new Promise((resolve, reject) => {
+    const { ipcRenderer } = window;
+    ipcRenderer.invoke('renderer:is-collection-trusted', collectionLocation).then(resolve).catch(reject);
+  });
+};
+
+export const trustCollection = (collectionLocation) => (dispatch, getState) => {
+  return new Promise((resolve, reject) => {
+    const { ipcRenderer } = window;
+    ipcRenderer.invoke('renderer:trust-collection', collectionLocation).then(resolve).catch(reject);
+  });
+};
+
+export const trustAndContinueOpeningCollection = () => (dispatch, getState) => {
+  return new Promise((resolve, reject) => {
+    const { ipcRenderer } = window;
+    const state = getState();
+    const collectionLocation = state.app.collectionPathOfTrustCollectionPrompt;
+    ipcRenderer
+      .invoke('renderer:trust-collection', collectionLocation)
+      .then(() => {
+        dispatch(resetTrustCollectionPrompt());
+        ipcRenderer.invoke('renderer:open-collection-by-path', collectionLocation).then(resolve).catch(reject);
+      })
+      .catch(reject);
+  });
 };
 
 export default appSlice.reducer;

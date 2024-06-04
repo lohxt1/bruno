@@ -24,15 +24,20 @@ const parseJsonCollection = (str) => {
 };
 
 const importCollection = () => {
+  let collectionLocation;
   return new Promise((resolve, reject) => {
     fileDialog({ accept: 'application/json' })
+      .then((files) => {
+        collectionLocation = files?.[0]?.path;
+        return files;
+      })
       .then(readFile)
       .then(parseJsonCollection)
       .then(hydrateSeqInCollection)
       .then(updateUidsInCollection)
       .then(transformItemsInCollection)
       .then(validateSchema)
-      .then((collection) => resolve({ collection }))
+      .then((collection) => resolve({ collection, collectionLocation }))
       .catch((err) => {
         console.log(err);
         reject(new BrunoError('Import collection failed'));

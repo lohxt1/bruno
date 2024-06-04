@@ -41,7 +41,7 @@ const getCollectionConfigFile = async (pathname) => {
   return config;
 };
 
-const openCollectionDialog = async (win, watcher) => {
+const openCollectionDialog = async (win, trustedCollections) => {
   const { filePaths } = await dialog.showOpenDialog(win, {
     properties: ['openDirectory', 'createDirectory']
   });
@@ -49,7 +49,8 @@ const openCollectionDialog = async (win, watcher) => {
   if (filePaths && filePaths[0]) {
     const resolvedPath = normalizeAndResolvePath(filePaths[0]);
     if (isDirectory(resolvedPath)) {
-      openCollection(win, watcher, resolvedPath);
+      let showTrustCollectionPrompt = !trustedCollections.exists(resolvedPath);
+      return { collectionPath: resolvedPath, showTrustCollectionPrompt };
     } else {
       console.error(`[ERROR] Cannot open unknown folder: "${resolvedPath}"`);
     }

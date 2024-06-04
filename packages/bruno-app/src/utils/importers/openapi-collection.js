@@ -381,14 +381,19 @@ const parseOpenApiCollection = (data) => {
 };
 
 const importCollection = () => {
+  let collectionLocation;
   return new Promise((resolve, reject) => {
     fileDialog({ accept: '.json, .yaml, .yml, application/json, application/yaml, application/x-yaml' })
+      .then((files) => {
+        collectionLocation = files?.[0]?.path;
+        return files;
+      })
       .then(readFile)
       .then(parseOpenApiCollection)
       .then(transformItemsInCollection)
       .then(hydrateSeqInCollection)
       .then(validateSchema)
-      .then((collection) => resolve({ collection }))
+      .then((collection) => resolve({ collection, collectionLocation }))
       .catch((err) => {
         console.error(err);
         reject(new BrunoError('Import collection failed: ' + err.message));

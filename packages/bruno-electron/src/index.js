@@ -13,8 +13,10 @@ const registerPreferencesIpc = require('./ipc/preferences');
 const Watcher = require('./app/watcher');
 const { loadWindowState, saveBounds, saveMaximized } = require('./utils/window');
 const registerNotificationsIpc = require('./ipc/notifications');
+const TrustedCollections = require('./store/trusted-collections');
 
 const lastOpenedCollections = new LastOpenedCollections();
+const trustedCollections = new TrustedCollections();
 
 // Reference: https://content-security-policy.com/
 const contentSecurityPolicy = [
@@ -122,7 +124,7 @@ app.on('ready', async () => {
 
   // register all ipc handlers
   registerNetworkIpc(mainWindow);
-  registerCollectionsIpc(mainWindow, watcher, lastOpenedCollections);
+  registerCollectionsIpc(mainWindow, watcher, lastOpenedCollections, trustedCollections);
   registerPreferencesIpc(mainWindow, watcher, lastOpenedCollections);
   registerNotificationsIpc(mainWindow, watcher);
 });

@@ -9,9 +9,17 @@ import GoldenEdition from './GoldenEdition';
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { IconSettings, IconCookie, IconHeart } from '@tabler/icons';
-import { updateLeftSidebarWidth, updateIsDragging, showPreferences } from 'providers/ReduxStore/slices/app';
+import {
+  updateLeftSidebarWidth,
+  updateIsDragging,
+  showPreferences,
+  resetTrustCollectionPrompt,
+  trustAndContinueOpeningCollection
+} from 'providers/ReduxStore/slices/app';
 import { useTheme } from 'providers/Theme';
 import Notifications from 'components/Notifications';
+import TrustCollectionModal from './TrustCollectionModal/index';
+import { toast } from 'react-hot-toast';
 
 const MIN_LEFT_SIDEBAR_WIDTH = 221;
 const MAX_LEFT_SIDEBAR_WIDTH = 600;
@@ -19,6 +27,7 @@ const MAX_LEFT_SIDEBAR_WIDTH = 600;
 const Sidebar = () => {
   const leftSidebarWidth = useSelector((state) => state.app.leftSidebarWidth);
   const preferencesOpen = useSelector((state) => state.app.showPreferences);
+  const showTrustCollectionPrompt = useSelector((state) => state.app.showTrustCollectionPrompt);
   const [goldenEditonOpen, setGoldenEditonOpen] = useState(false);
 
   const [asideWidth, setAsideWidth] = useState(leftSidebarWidth);
@@ -79,6 +88,16 @@ const Sidebar = () => {
     setAsideWidth(leftSidebarWidth);
   }, [leftSidebarWidth]);
 
+  const handleImportCollectionAfterTrustingPrompt = () => {
+    dispatch(trustAndContinueOpeningCollection());
+    toast.success('Collection trusted!');
+  };
+
+  const handleTrustCollectionPromptClose = () => {
+    dispatch(resetTrustCollectionPrompt());
+    toast.error('Collection not trusted! Aborting operation.');
+  };
+
   return (
     <StyledWrapper className="flex relative h-screen">
       <aside>
@@ -86,6 +105,12 @@ const Sidebar = () => {
         <div className="flex flex-row h-screen w-full">
           {preferencesOpen && <Preferences onClose={() => dispatch(showPreferences(false))} />}
           {cookiesOpen && <Cookies onClose={() => setCookiesOpen(false)} />}
+          {showTrustCollectionPrompt && (
+            <TrustCollectionModal
+              onSubmit={handleImportCollectionAfterTrustingPrompt}
+              onClose={handleTrustCollectionPromptClose}
+            />
+          )}
 
           <div className="flex flex-col w-full" style={{ width: asideWidth }}>
             <div className="flex flex-col flex-grow">
