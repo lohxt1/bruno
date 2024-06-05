@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import isEqual from 'lodash/isEqual';
 import { getAllVariables } from 'utils/collections';
-import { defineCodeMirrorBrunoVariablesMode } from 'utils/common/codemirror';
+import { defineCombinedCodeMirrorMode } from 'utils/common/codemirror';
 import StyledWrapper from './StyledWrapper';
 
 let CodeMirror;
@@ -30,7 +30,7 @@ class SingleLineEditor extends Component {
       theme: this.props.theme === 'dark' ? 'monokai' : 'default',
       mode: 'brunovariables',
       brunoVarInfo: {
-        variables: getAllVariables(this.props.collection)
+        variables: getAllVariables(this.props.collection, this.props.item)
       },
       scrollbarStyle: null,
       tabindex: 0,
@@ -82,7 +82,7 @@ class SingleLineEditor extends Component {
     });
     if (this.props.autocomplete) {
       this.editor.on('keyup', (cm, event) => {
-        if (!cm.state.completionActive /*Enables keyboard navigation in autocomplete list*/ && event.keyCode != 13) {
+        if (!cm.state.completionActive /*Enables keyboard navigation in autocomplete list*/ && event.key !== 'Enter') {
           /*Enter - do not open autocomplete list just after item has been selected in it*/
           CodeMirror.commands.autocomplete(cm, CodeMirror.hint.anyword, { autocomplete: this.props.autocomplete });
         }
@@ -108,10 +108,10 @@ class SingleLineEditor extends Component {
     // event loop.
     this.ignoreChangeEvent = true;
 
-    let variables = getAllVariables(this.props.collection);
+    let variables = getAllVariables(this.props.collection, this.props.item);
     if (!isEqual(variables, this.variables)) {
       this.editor.options.brunoVarInfo.variables = variables;
-      this.addOverlay();
+      this.addOverlay(variables);
     }
     if (this.props.theme !== prevProps.theme && this.editor) {
       this.editor.setOption('theme', this.props.theme === 'dark' ? 'monokai' : 'default');
@@ -127,12 +127,10 @@ class SingleLineEditor extends Component {
     this.editor.getWrapperElement().remove();
   }
 
-  addOverlay = () => {
-    let variables = getAllVariables(this.props.collection);
+  addOverlay = (variables) => {
     this.variables = variables;
-
-    defineCodeMirrorBrunoVariablesMode(variables, 'text/plain');
-    this.editor.setOption('mode', 'brunovariables');
+    defineCombinedCodeMirrorMode(variables, 'text/plain');
+    this.editor.setOption('mode', 'combinedmode');
   };
 
   render() {
