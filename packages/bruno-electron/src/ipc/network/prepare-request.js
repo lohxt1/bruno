@@ -179,11 +179,20 @@ const prepareRequest = (request, collectionRoot, collectionPath) => {
     if (!contentTypeDefined) {
       axiosRequest.headers['content-type'] = 'application/json';
     }
-    const body = decomment(request.body.json);
+    let jsonBody;
+
+    // Attempt to decomment the JSON body
     try {
-      axiosRequest.data = JSONbig.parse(body);
-    } catch (ex) {
-      axiosRequest.data = body;
+      jsonBody = decomment(request?.body?.json);
+    } catch (error) {
+      jsonBody = request?.body?.json;
+    }
+
+    // Attempt to parse the JSON body with JSONbig
+    try {
+      axiosRequest.data = JSONbig.parse(jsonBody);
+    } catch (parseError) {
+      axiosRequest.data = jsonBody;
     }
   }
 
