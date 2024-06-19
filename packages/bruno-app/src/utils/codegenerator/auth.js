@@ -1,7 +1,7 @@
 import get from 'lodash/get';
 
 export const getAuthHeaders = (collectionRootAuth, requestAuth) => {
-  const auth = collectionRootAuth && ['inherit', 'none'].includes(requestAuth.mode) ? collectionRootAuth : requestAuth;
+  const auth = collectionRootAuth && ['inherit'].includes(requestAuth.mode) ? collectionRootAuth : requestAuth;
 
   switch (auth.mode) {
     case 'basic':
