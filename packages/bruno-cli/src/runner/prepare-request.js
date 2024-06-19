@@ -87,20 +87,16 @@ const prepareRequest = (request, collectionRoot) => {
     if (!contentTypeDefined) {
       axiosRequest.headers['content-type'] = 'application/json';
     }
-    let jsonBody;
 
-    // Attempt to decomment the JSON body
-    try {
-      jsonBody = decomment(request?.body?.json);
-    } catch (error) {
-      jsonBody = request?.body?.json;
-    }
+    let jsonBody = request?.body?.json;
 
-    // Attempt to parse the JSON body with JSONbig
-    try {
-      axiosRequest.data = JSONbig.parse(jsonBody);
-    } catch (parseError) {
-      axiosRequest.data = jsonBody;
+    if (jsonBody) {
+      jsonBody = decomment(jsonBody);
+      try {
+        axiosRequest.data = JSONbig.parse(jsonBody);
+      } catch (parseError) {
+        axiosRequest.data = jsonBody;
+      }
     }
   }
 
