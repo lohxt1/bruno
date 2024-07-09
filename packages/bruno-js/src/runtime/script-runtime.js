@@ -127,7 +127,7 @@ class ScriptRuntime {
       `module.exports = async () => {
         return new Promise(async (__BRUNO_SCRIPT_PROMISE_RESOLVE, __BRUNO_SCRIPT_PROMISE_REJECT) => {
           const interval = setInterval(() => {
-            if (abortSignal.aborted) {
+            if (abortSignal?.aborted) {
               clearInterval(interval);
               __BRUNO_SCRIPT_PROMISE_REJECT('Pre Request Script Execution Aborted');
             }
@@ -241,7 +241,7 @@ class ScriptRuntime {
       `module.exports = async () => {
         return new Promise(async (__BRUNO_SCRIPT_PROMISE_RESOLVE, __BRUNO_SCRIPT_PROMISE_REJECT) => {
           const interval = setInterval(() => {
-            if (abortSignal.aborted) {
+            if (abortSignal?.aborted) {
               clearInterval(interval);
               __BRUNO_SCRIPT_PROMISE_REJECT('Post Response Script Execution Aborted');
             }
