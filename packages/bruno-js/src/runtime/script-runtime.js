@@ -68,7 +68,8 @@ class ScriptRuntime {
 
     const context = {
       bru,
-      req
+      req,
+      abortSignal: request.signal
     };
 
     if (onConsoleLog && typeof onConsoleLog === 'function') {
@@ -121,8 +122,28 @@ class ScriptRuntime {
         }
       }
     });
-    const asyncVM = vm.run(`module.exports = async () => { ${script} }`, path.join(collectionPath, 'vm.js'));
-    await asyncVM();
+
+    const asyncVM = vm.run(
+      `module.exports = async () => {
+        return new Promise(async (__BRUNO_SCRIPT_PROMISE_RESOLVE, __BRUNO_SCRIPT_PROMISE_REJECT) => {
+          const interval = setInterval(() => {
+            if (abortSignal.aborted) {
+              clearInterval(interval);
+              __BRUNO_SCRIPT_PROMISE_REJECT('Pre Request Script Execution Aborted');
+            }
+          }, 100);
+          ${script}
+          __BRUNO_SCRIPT_PROMISE_RESOLVE()
+        });  
+      }`,
+      path.join(collectionPath, 'vm.js')
+    );
+    try {
+      await asyncVM();
+    } catch (e) {
+      throw new Error(e);
+    }
+
     return {
       request,
       envVariables: cleanJson(envVariables),
@@ -163,7 +184,8 @@ class ScriptRuntime {
     const context = {
       bru,
       req,
-      res
+      res,
+      abortSignal: request.signal
     };
 
     if (onConsoleLog && typeof onConsoleLog === 'function') {
@@ -215,8 +237,26 @@ class ScriptRuntime {
       }
     });
 
-    const asyncVM = vm.run(`module.exports = async () => { ${script} }`, path.join(collectionPath, 'vm.js'));
-    await asyncVM();
+    const asyncVM = vm.run(
+      `module.exports = async () => {
+        return new Promise(async (__BRUNO_SCRIPT_PROMISE_RESOLVE, __BRUNO_SCRIPT_PROMISE_REJECT) => {
+          const interval = setInterval(() => {
+            if (abortSignal.aborted) {
+              clearInterval(interval);
+              __BRUNO_SCRIPT_PROMISE_REJECT('Post Response Script Execution Aborted');
+            }
+          }, 100);
+          ${script}
+          __BRUNO_SCRIPT_PROMISE_RESOLVE()
+        });  
+      }`,
+      path.join(collectionPath, 'vm.js')
+    );
+    try {
+      await asyncVM();
+    } catch (e) {
+      throw new Error(e);
+    }
 
     return {
       response,

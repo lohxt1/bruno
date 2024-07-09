@@ -47,9 +47,9 @@ const checkConnection = (host, port) =>
  * @see https://github.com/axios/axios/issues/695
  * @returns {axios.AxiosInstance}
  */
-function makeAxiosInstance() {
+function makeAxiosInstance({ signal }) {
   /** @type {axios.AxiosInstance} */
-  const instance = axios.create();
+  const instance = axios.create({ signal });
 
   instance.interceptors.request.use(async (config) => {
     const url = URL.parse(config.url);

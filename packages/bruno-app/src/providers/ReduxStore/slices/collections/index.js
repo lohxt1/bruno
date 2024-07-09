@@ -1502,10 +1502,11 @@ export const collectionsSlice = createSlice({
         const item = findItemInCollection(collection, itemUid);
         if (item) {
           if (type === 'request-queued') {
-            const { cancelTokenUid } = action.payload;
+            const { cancelTokenUid, requestStartTimestamp } = action.payload;
             item.requestUid = requestUid;
             item.requestState = 'queued';
             item.cancelTokenUid = cancelTokenUid;
+            item.requestStartTimestamp = requestStartTimestamp;
           }
 
           if (type === 'request-sent') {

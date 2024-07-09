@@ -16,7 +16,7 @@ const StopWatch = ({ requestTimestamp }) => {
   });
 
   useEffect(() => {
-    setMilliseconds(Date.now() - requestTimestamp);
+    requestTimestamp && setMilliseconds(Date.now() - requestTimestamp);
   }, [requestTimestamp]);
 
   if (milliseconds < 1000) {

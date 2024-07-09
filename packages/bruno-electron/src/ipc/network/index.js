@@ -205,7 +205,7 @@ const configureRequest = async (
     });
   }
 
-  const axiosInstance = makeAxiosInstance();
+  const axiosInstance = makeAxiosInstance({ signal: request.signal });
 
   if (request.oauth2) {
     let requestCopy = cloneDeep(request);
@@ -265,6 +265,14 @@ const configureRequest = async (
   delete request.pathParams;
 
   return axiosInstance;
+};
+
+const checkIfSignalIsAborted = (request) => {
+  if (request.signal.aborted) {
+    let error = new Error('Request execution cancelled');
+    error.isCancel = true;
+    throw error;
+  }
 };
 
 const parseDataFromResponse = (response) => {
@@ -448,7 +456,8 @@ const registerNetworkIpc = (mainWindow) => {
       requestUid,
       collectionUid,
       itemUid: item.uid,
-      cancelTokenUid
+      cancelTokenUid,
+      requestStartTimestamp: Date.now()
     });
 
     const collectionRoot = get(collection, 'root', {});
@@ -475,6 +484,8 @@ const registerNetworkIpc = (mainWindow) => {
         scriptingConfig
       );
 
+      checkIfSignalIsAborted(request);
+
       const axiosInstance = await configureRequest(
         collectionUid,
         request,
@@ -490,8 +501,7 @@ const registerNetworkIpc = (mainWindow) => {
           url: request.url,
           method: request.method,
           headers: request.headers,
-          data: safeParseJSON(safeStringifyJSON(request.data)),
-          timestamp: Date.now()
+          data: safeParseJSON(safeStringifyJSON(request.data))
         },
         collectionUid,
         itemUid: item.uid,
@@ -555,6 +565,8 @@ const registerNetworkIpc = (mainWindow) => {
       const domainsWithCookies = await getDomainsWithCookies();
 
       mainWindow.webContents.send('main:cookies-update', safeParseJSON(safeStringifyJSON(domainsWithCookies)));
+
+      checkIfSignalIsAborted(request);
 
       await runPostResponse(
         request,
