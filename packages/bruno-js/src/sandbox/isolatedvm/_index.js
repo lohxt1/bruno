@@ -251,16 +251,29 @@ const executeInIsolatedVMAsync = async ({
     let req = {};
     let res = {};
     let console = {};
-    global.requireObject = {};
-    global.require = (module) => {
-      return global.requireObject[module];
+      global.requireObject = {};
+      global.require = (module) => {
+        return global.requireObject[module];
+      }
+    `);
+
+    await addLibraryShimsToContext(this.context);
+
+    try {
+      const bundledCode = getBundledCode?.toString() || '';
+      await context.eval(`(${bundledCode})()`);
+    } catch (err) {
+      console.debug('Error bundling libraries', err);
     }
-  `);
+
+    context.global.setSync('log', function (...args) {
+      console.debug(...args);
+    });
 
     context.evalClosureSync(
       `
-        global.wait = (...args) => $0.applySyncPromise(undefined, args?.map(arg=>JSON.stringify(arg)));
-    `,
+          global.wait = (...args) => $0.applySyncPromise(undefined, args?.map(arg=>JSON.stringify(arg)));
+      `,
       [
         async (...argStrings) => {
           await new Promise((resolve, reject) => {
@@ -285,33 +298,20 @@ const executeInIsolatedVMAsync = async ({
     );
 
     await context.eval(`
-    setTimeout = undefined;
-    global._setTimeout = async (fn, timer) => {
-      await wait(timer);
-      await fn.apply();
-    } 
-    setTimeout = async (fn, timer) => {
-      await wait(timer);
-      await fn.apply();
-    } 
-    global.setTimeout = async (fn, timer) => {
-      await wait(timer);
-      await fn.apply();
-    }
-  `);
-
-    await addLibraryShimsToContext(context);
-
-    context.global.setSync('log', function (...args) {
-      console.debug(...args);
-    });
-
-    try {
-      const bundledCode = getBundledCode?.toString() || '';
-      await context.eval(`(${bundledCode})()`);
-    } catch (err) {
-      console.debug('Error bundling libraries', err);
-    }
+      setTimeout = undefined;
+      global._setTimeout = async (fn, timer) => {
+        await wait(timer);
+        await fn.apply();
+      } 
+      setTimeout = async (fn, timer) => {
+        await wait(timer);
+        await fn.apply();
+      } 
+      global.setTimeout = async (fn, timer) => {
+        await wait(timer);
+        await fn.apply();
+      }
+    `);
 
     const { bru, req, res, test, __brunoTestResults, console: consoleFn } = externalContext;
 
@@ -335,17 +335,44 @@ const executeInIsolatedVMAsync = async ({
     });
 
     const jsScriptText = `
-      new Promise(async (resolve, reject) => {
+      new Promise(async (__bruno_resolve, __bruno_reject) => {
         console?.debug && console.debug('isolated-vm:execution-start:');
         try {
-          ${externalScript}
+          // await new Promise(resolve => setTimeout(() => {
+          //   console.log('resolving');
+          //   resolve();
+          // }, 2000));
+          // setTimeout(()=>{
+          //   console.log("from settimeout");
+            ${externalScript}
+          // }, 2000);
         } catch (error) {
           console?.debug && console.debug('isolated-vm:execution-end:with-error', error?.message);
         }
         console?.debug && console.debug('isolated-vm:execution-end:');
-        resolve();
+        __bruno_resolve();
       });
     `;
+
+    // const jsScriptText = `
+    // (async () => {
+    //   console?.debug && console.debug('isolated-vm:execution-start:');
+    //   try {
+    //     await new Promise((resolve, reject) => {
+    //       console.log('foo');
+    //       resolve();
+    //       // setTimeout(() => {
+    //       //   console.log('bar');
+    //       // }, 2000);
+    //     });
+    //     // wait(()=>{ console.log("wait"); }, 2000);
+    // ${externalScript}
+    //   } catch (error) {
+    //     console?.debug && console.debug('isolated-vm:execution-end:with-error', error?.message);
+    //   }
+    //   console?.debug && console.debug('isolated-vm:execution-end:');
+    // })(global);
+    // `;
 
     const templateLiteralText = `
       let value = \`${externalScript}\`;
@@ -363,6 +390,8 @@ const executeInIsolatedVMAsync = async ({
         : scriptType === 'expression'
         ? jsExpressionText
         : jsScriptText;
+
+    // console.log('script', jsScriptText);
 
     const script = await isolate.compileScript(scriptText);
     await script.run(context);
