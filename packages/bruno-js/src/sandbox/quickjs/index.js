@@ -16,6 +16,14 @@ const loader = memoizePromiseFactory(() => newQuickJSWASMModule());
 const getContext = (opts) => loader().then((mod) => (QuickJSSyncContext = mod.newContext(opts)));
 getContext();
 
+const safeParseJSON = (data) => {
+  try {
+    return JSON.parse(data);
+  } catch (e) {
+    return data;
+  }
+};
+
 const toNumber = (value) => {
   const num = Number(value);
   return Number.isInteger(num) ? parseInt(value, 10) : parseFloat(value);
@@ -25,6 +33,11 @@ const executeQuickJsVm = ({ script: externalScript, context: externalContext, sc
   if (!isNaN(Number(externalScript))) {
     return Number(externalScript);
   }
+
+  if(typeof safeParseJSON(externalScript) === 'boolean') return safeParseJSON(externalScript);
+
+  if (externalScript === 'null') return null;
+  if (externalScript === 'undefined') return undefined;
 
   const vm = QuickJSSyncContext;
 
@@ -60,6 +73,12 @@ const executeQuickJsVmAsync = async ({ script: externalScript, context: external
   if (!isNaN(Number(externalScript))) {
     return toNumber(externalScript);
   }
+
+  if(typeof safeParseJSON(externalScript) === 'boolean') return safeParseJSON(externalScript);
+
+  if (externalScript === 'null') return null;
+  if (externalScript === 'undefined') return undefined;
+  
   try {
     const module = await newQuickJSWASMModule();
     const vm = module.newContext();
