@@ -206,7 +206,7 @@ const Sidebar = () => {
                 onClick={() => openUpdater()}
                 className="flex flex-grow items-center justify-end text-xs mr-2 relative"
               >
-                <span className={appUpdateAvailable ? 'has-update' : ''}>v1.34.2</span>
+                <span className={appUpdateAvailable ? 'has-update' : ''}>v1.34.3</span>
                 {appUpdateAvailable && <div className="update-dot"></div>}
               </div>
             </div>
