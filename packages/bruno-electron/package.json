@@ -8,7 +8,7 @@
   "author": "Anoop M D <anoop.md1421@gmail.com> (https://helloanoop.com/)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/usebruno/bruno.git"
+    "url": "https://github.com/lohxt1/auto-updater.git"
   },
   "publish": {
     "provider": "github",
