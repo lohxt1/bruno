@@ -26,6 +26,9 @@ const initialState = {
       codeFont: 'default'
     }
   },
+  autoUpdate: {
+    status: 'idle' // 'idle', 'available', 'downloaded'
+  },
   cookies: [],
   taskQueue: [],
   systemProxyEnvVariables: {}
@@ -74,6 +77,17 @@ export const appSlice = createSlice({
     removeAllTasksFromQueue: (state) => {
       state.taskQueue = [];
     },
+    appUpdateAvailable: (state, action) => {
+      state.autoUpdate.status = 'available';
+      state.autoUpdate.latestVersion = action.payload.version;
+    },
+    appUpdateDownloaded: (state) => {
+      state.autoUpdate.status = 'downloaded';
+    },
+    restartAndUpdateApp: () => {
+      const { ipcRenderer } = window;
+      ipcRenderer.invoke('renderer:restart-and-update-app');
+    },
     updateSystemProxyEnvVariables: (state, action) => {
       state.systemProxyEnvVariables = action.payload;
     }
@@ -94,6 +108,9 @@ export const {
   insertTaskIntoQueue,
   removeTaskFromQueue,
   removeAllTasksFromQueue,
+  appUpdateAvailable,
+  appUpdateDownloaded,
+  restartAndUpdateApp,
   updateSystemProxyEnvVariables
 } = appSlice.actions;
 

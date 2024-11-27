@@ -2,6 +2,7 @@ const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const { ipcMain, shell, dialog, app } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const { envJsonToBru, bruToJson, jsonToBru, jsonToCollectionBru } = require('../bru');
 
 const {
@@ -439,6 +440,10 @@ const registerRendererEventHandlers = (mainWindow, watcher, lastOpenedCollection
       watcher.removeWatcher(collectionPath, mainWindow);
       lastOpenedCollections.remove(collectionPath);
     }
+  });
+
+  ipcMain.handle('renderer:restart-and-update-app', () => {
+    autoUpdater.quitAndInstall();
   });
 
   ipcMain.handle('renderer:import-collection', async (event, collection, collectionLocation) => {

@@ -9,9 +9,15 @@ import GoldenEdition from './GoldenEdition';
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { IconSettings, IconCookie, IconHeart } from '@tabler/icons';
-import { updateLeftSidebarWidth, updateIsDragging, showPreferences } from 'providers/ReduxStore/slices/app';
+import {
+  updateLeftSidebarWidth,
+  updateIsDragging,
+  showPreferences,
+  restartAndUpdateApp
+} from 'providers/ReduxStore/slices/app';
 import { useTheme } from 'providers/Theme';
 import Notifications from 'components/Notifications';
+import UpdaterModal from './updaterModal';
 
 const MIN_LEFT_SIDEBAR_WIDTH = 221;
 const MAX_LEFT_SIDEBAR_WIDTH = 600;
@@ -19,6 +25,8 @@ const MAX_LEFT_SIDEBAR_WIDTH = 600;
 const Sidebar = () => {
   const leftSidebarWidth = useSelector((state) => state.app.leftSidebarWidth);
   const preferencesOpen = useSelector((state) => state.app.showPreferences);
+  const appUpdateAvailable = useSelector((state) => state.app.autoUpdate.status === 'available');
+  const [appUpdateModalOpen, setAppUpdateModalOpen] = useState(false);
   const [goldenEditionOpen, setGoldenEditionOpen] = useState(false);
 
   const [asideWidth, setAsideWidth] = useState(leftSidebarWidth);
@@ -63,6 +71,14 @@ const Sidebar = () => {
         isDragging: true
       })
     );
+  };
+
+  const openUpdater = () => {
+    setAppUpdateModalOpen(true);
+  };
+
+  const triggerUpdate = () => {
+    dispatch(restartAndUpdateApp());
   };
 
   useEffect(() => {
@@ -119,7 +135,9 @@ const Sidebar = () => {
               aria-describedby="cookies-description"
             />
           )}
-
+          {appUpdateModalOpen && (
+            <UpdaterModal onClose={() => setAppUpdateModalOpen(false)} updateNow={triggerUpdate} />
+          )}
           <div className="flex flex-col w-full" style={{ width: asideWidth }}>
             <div className="flex flex-col flex-grow">
               <TitleBar />
@@ -184,7 +202,13 @@ const Sidebar = () => {
                   Star
                 </GitHubButton> */}
               </div>
-              <div className="flex flex-grow items-center justify-end text-xs mr-2">v1.34.2</div>
+              <div
+                onClick={() => openUpdater()}
+                className="flex flex-grow items-center justify-end text-xs mr-2 relative"
+              >
+                <span className={appUpdateAvailable ? 'has-update' : ''}>v1.34.2</span>
+                {appUpdateAvailable && <div className="update-dot"></div>}
+              </div>
             </div>
           </div>
         </div>

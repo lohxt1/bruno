@@ -3,6 +3,20 @@ import styled from 'styled-components';
 const Wrapper = styled.div`
   color: ${(props) => props.theme.sidebar.color};
 
+  .has-update {
+    position: relative;
+  }
+
+  .update-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: red;
+    position: absolute;
+    top: -3px;
+    right: -7px;
+  }
+
   aside {
     background-color: ${(props) => props.theme.sidebar.bg};
 

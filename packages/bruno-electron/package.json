@@ -6,9 +6,21 @@
   "private": true,
   "main": "src/index.js",
   "author": "Anoop M D <anoop.md1421@gmail.com> (https://helloanoop.com/)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/usebruno/bruno.git"
+  },
+  "publish": {
+    "provider": "github",
+    "releaseType": "release"
+  },
+  "bugs": {
+    "url": "https://github.com/usebruno/bruno/issues"
+  },
   "scripts": {
     "clean": "rimraf dist",
     "dev": "electron .",
+    "publish": "electron-builder --publish always",
     "dist:mac": "electron-builder --mac --config electron-builder-config.js",
     "dist:win": "electron-builder --win --config electron-builder-config.js",
     "dist:linux": "electron-builder --linux AppImage --config electron-builder-config.js",
@@ -37,8 +49,10 @@
     "decomment": "^0.9.5",
     "dotenv": "^16.0.3",
     "electron-is-dev": "^2.0.0",
+    "electron-log": "^5.1.5",
     "electron-notarize": "^1.2.2",
     "electron-store": "^8.1.0",
+    "electron-updater": "^6.2.1",
     "electron-util": "^0.17.2",
     "form-data": "^4.0.0",
     "fs-extra": "^10.1.0",
