@@ -68,8 +68,8 @@ jobs:
 
       - name: Build app
         run: |
-          npm run build:electron:linux
           npm run build:electron:deb
+          npm run build:electron:linux
         shell: bash
 
       - uses: actions/upload-artifact@v4
