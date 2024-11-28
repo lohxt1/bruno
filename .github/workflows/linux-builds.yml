@@ -1,3 +1,4 @@
+name: linux builds
 
 on:
   workflow_dispatch:
@@ -68,7 +69,11 @@ jobs:
       - name: Build .deb package
         run: |
           npm run build:electron:deb
-          mv ./packages/bruno-electron/out/latest-linux.yml ./packages/bruno-electron/out/latest-deb-linux.yml
+          if [ -f ./packages/bruno-electron/out/latest-linux.yml ]; then
+            mv ./packages/bruno-electron/out/latest-linux.yml ./packages/bruno-electron/out/latest-deb-linux.yml
+          else
+            echo "Warning: latest-linux.yml not found, skipping .deb YAML move."
+          fi
         shell: bash
 
       - name: Upload .deb build and metadata
@@ -83,7 +88,11 @@ jobs:
       - name: Build AppImage package
         run: |
           npm run build:electron:linux
-          mv ./packages/bruno-electron/out/latest-linux.yml ./packages/bruno-electron/out/latest-appimage-linux.yml
+          if [ -f ./packages/bruno-electron/out/latest-linux.yml ]; then
+            mv ./packages/bruno-electron/out/latest-linux.yml ./packages/bruno-electron/out/latest-appimage-linux.yml
+          else
+            echo "Warning: latest-linux.yml not found, skipping AppImage YAML move."
+          fi
         shell: bash
 
       - name: Upload AppImage build and metadata
