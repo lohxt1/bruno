@@ -66,19 +66,36 @@ jobs:
           npm run build:web
         shell: bash
 
-      - name: Build app
+      - name: Build .deb package
         run: |
           npm run build:electron:deb
-          npm run build:electron:linux
+          mv ./packages/bruno-electron/out/latest-linux.yml ./packages/bruno-electron/out/latest-deb-linux.yml
         shell: bash
 
-      - uses: actions/upload-artifact@v4
+      - name: Build AppImage package
+        run: |
+          npm run build:electron:linux
+          mv ./packages/bruno-electron/out/latest-linux.yml ./packages/bruno-electron/out/latest-appimage-linux.yml
+        shell: bash
+
+      - name: Upload .deb build and metadata
+        uses: actions/upload-artifact@v4
         with:
-          name: build-linux
+          name: deb-build
           path: |
-            ./packages/bruno-electron/out/bruno_*
+            ./packages/bruno-electron/out/*.deb
+            ./packages/bruno-electron/out/latest-deb-linux.yml
           retention-days: 1
 
+      - name: Upload AppImage build and metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: appimage-build
+          path: |
+            ./packages/bruno-electron/out/*.AppImage
+            ./packages/bruno-electron/out/latest-appimage-linux.yml
+          retention-days: 1
+        
   publish:
     needs: [tagname, linux]
     runs-on: ubuntu-latest
@@ -89,10 +106,30 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/download-artifact@v4
-
-      - run: |
+  
+      - name: Download .deb and AppImage build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: deb-build
+          path: ./builds/deb
+  
+      - name: Download AppImage build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: appimage-build
+          path: ./builds/appimage
+  
+      - name: Create GitHub Release and Upload Artifacts
+        run: |
           TAG_NAME=${{ needs.tagname.outputs.tag_name }}
-          gh release create "$TAG_NAME" build-linux/*
-        shell: bash
+          
+          # Create GitHub release
+          gh release create "$TAG_NAME" \
+            ./builds/deb/*.deb \
+            ./builds/deb/latest-deb-linux.yml \
+            ./builds/appimage/*.AppImage \
+            ./builds/appimage/latest-appimage-linux.yml \
+            --title "Release $TAG_NAME" \
+            --notes "Release notes for $TAG_NAME"
+          shell: bash
+  
