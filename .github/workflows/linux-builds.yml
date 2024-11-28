@@ -1,4 +1,3 @@
-name: linux builds
 
 on:
   workflow_dispatch:
@@ -72,12 +71,6 @@ jobs:
           mv ./packages/bruno-electron/out/latest-linux.yml ./packages/bruno-electron/out/latest-deb-linux.yml
         shell: bash
 
-      - name: Build AppImage package
-        run: |
-          npm run build:electron:linux
-          mv ./packages/bruno-electron/out/latest-linux.yml ./packages/bruno-electron/out/latest-appimage-linux.yml
-        shell: bash
-
       - name: Upload .deb build and metadata
         uses: actions/upload-artifact@v4
         with:
@@ -86,6 +79,12 @@ jobs:
             ./packages/bruno-electron/out/*.deb
             ./packages/bruno-electron/out/latest-deb-linux.yml
           retention-days: 1
+
+      - name: Build AppImage package
+        run: |
+          npm run build:electron:linux
+          mv ./packages/bruno-electron/out/latest-linux.yml ./packages/bruno-electron/out/latest-appimage-linux.yml
+        shell: bash
 
       - name: Upload AppImage build and metadata
         uses: actions/upload-artifact@v4
