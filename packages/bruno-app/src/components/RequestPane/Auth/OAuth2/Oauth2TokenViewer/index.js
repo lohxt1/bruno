@@ -135,7 +135,7 @@ const Oauth2TokenViewer = ({ collection, item, url, credentialsId, handleRun }) 
 
   return (
     <StyledWrapper className="relative w-auto h-fit mt-2">
-      {creds ? (
+      {creds?.access_token ? (
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-medium">Token</h2>
