@@ -36,9 +36,9 @@ const prepareRequest = (item = {}, collection = {}) => {
   };
 
   const collectionAuth = get(collection, 'root.request.auth');
-  if (collectionAuth && request.auth.mode === 'inherit') {
+  if (collectionAuth && request.auth?.mode === 'inherit') {
     if (collectionAuth.mode === 'basic') {
-      axiosRequest.auth = {
+      axiosRequest.basicAuth = {
         username: get(collectionAuth, 'basic.username'),
         password: get(collectionAuth, 'basic.password')
       };
@@ -47,11 +47,29 @@ const prepareRequest = (item = {}, collection = {}) => {
     if (collectionAuth.mode === 'bearer') {
       axiosRequest.headers['Authorization'] = `Bearer ${get(collectionAuth, 'bearer.token')}`;
     }
+
+    if (collectionAuth.mode === 'apikey') {
+      if (collectionAuth.apikey?.placement === 'header') {
+        axiosRequest.headers[collectionAuth.apikey?.key] = collectionAuth.apikey?.value;
+      }
+      
+      if (collectionAuth.apikey?.placement === 'queryparams') {
+        if (axiosRequest.url && collectionAuth.apikey?.key) {
+          try {
+            const urlObj = new URL(request.url);
+            urlObj.searchParams.set(collectionAuth.apikey?.key, collectionAuth.apikey?.value);
+            axiosRequest.url = urlObj.toString();
+          } catch (error) {
+            console.error('Invalid URL:', request.url, error);
+          }
+        }
+      }
+    }
   }
 
-  if (request.auth) {
+  if (request.auth && request.auth.mode !== 'inherit') {
     if (request.auth.mode === 'basic') {
-      axiosRequest.auth = {
+      axiosRequest.basicAuth = {
         username: get(request, 'auth.basic.username'),
         password: get(request, 'auth.basic.password')
       };
