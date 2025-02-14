@@ -161,7 +161,7 @@ ${indentString(`token_placement: ${auth?.oauth2?.tokenPlacement || ''}`)}${
 }${
   auth?.oauth2?.tokenPlacement !== 'header' ? '\n' + indentString(`token_query_key: ${auth?.oauth2?.tokenQueryKey || ''}`) : ''
 }
-${indentString(`reuse_token: ${auth?.oauth2?.reuseToken || ''}`)}
+${indentString(`reuse_token: ${auth?.oauth2?.autoFetchToken || ''}`)}
 }
 
 `;
@@ -184,7 +184,7 @@ ${indentString(`token_placement: ${auth?.oauth2?.tokenPlacement || ''}`)}${
 }${
   auth?.oauth2?.tokenPlacement !== 'header' ? '\n' + indentString(`token_query_key: ${auth?.oauth2?.tokenQueryKey || ''}`) : ''
 }
-${indentString(`reuse_token: ${auth?.oauth2?.reuseToken || ''}`)}
+${indentString(`reuse_token: ${auth?.oauth2?.autoFetchToken || ''}`)}
 }
 
 `;
@@ -203,7 +203,7 @@ ${indentString(`token_placement: ${auth?.oauth2?.tokenPlacement || ''}`)}${
 }${
   auth?.oauth2?.tokenPlacement !== 'header' ? '\n' + indentString(`token_query_key: ${auth?.oauth2?.tokenQueryKey || ''}`) : ''
 }
-${indentString(`reuse_token: ${auth?.oauth2?.reuseToken || ''}`)}
+${indentString(`reuse_token: ${auth?.oauth2?.autoFetchToken || ''}`)}
 }
 
 `;

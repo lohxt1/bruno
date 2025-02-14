@@ -489,7 +489,7 @@ const sem = grammar.createSemantics().addAttribute('ast', {
     const tokenPlacementKey = _.find(auth, { name: 'token_placement' });
     const tokenHeaderPrefixKey = _.find(auth, { name: 'token_header_prefix' });
     const tokenQueryKeyKey = _.find(auth, { name: 'token_query_key' });
-    const reuseTokenKey = _.find(auth, { name: 'reuse_token' });
+    const autoFetchTokenKey = _.find(auth, { name: 'reuse_token' });
     return {
       auth: {
         oauth2:
@@ -507,7 +507,7 @@ const sem = grammar.createSemantics().addAttribute('ast', {
                 tokenPlacement: tokenPlacementKey?.value ? tokenPlacementKey.value : 'header',
                 tokenHeaderPrefix: tokenHeaderPrefixKey?.value ? tokenHeaderPrefixKey.value : 'Bearer',
                 tokenQueryKey: tokenQueryKeyKey?.value ? tokenQueryKeyKey.value : 'access_token',
-                reuseToken: reuseTokenKey?.value ? JSON.parse(reuseTokenKey?.value || false) : false
+                autoFetchToken: autoFetchTokenKey?.value ? JSON.parse(autoFetchTokenKey?.value || false) : false
               }
             : grantTypeKey?.value && grantTypeKey?.value == 'authorization_code'
             ? {
@@ -525,7 +525,7 @@ const sem = grammar.createSemantics().addAttribute('ast', {
                 tokenPlacement: tokenPlacementKey?.value ? tokenPlacementKey.value : 'header',
                 tokenHeaderPrefix: tokenHeaderPrefixKey?.value ? tokenHeaderPrefixKey.value : 'Bearer',
                 tokenQueryKey: tokenQueryKeyKey?.value ? tokenQueryKeyKey.value : 'access_token',
-                reuseToken: reuseTokenKey?.value ? JSON.parse(reuseTokenKey?.value || false) : false
+                autoFetchToken: autoFetchTokenKey?.value ? JSON.parse(autoFetchTokenKey?.value || false) : false
               }
             : grantTypeKey?.value && grantTypeKey?.value == 'client_credentials'
             ? {
@@ -539,7 +539,7 @@ const sem = grammar.createSemantics().addAttribute('ast', {
                 tokenPlacement: tokenPlacementKey?.value ? tokenPlacementKey.value : 'header',
                 tokenHeaderPrefix: tokenHeaderPrefixKey?.value ? tokenHeaderPrefixKey.value : 'Bearer',
                 tokenQueryKey: tokenQueryKeyKey?.value ? tokenQueryKeyKey.value : 'access_token',
-                reuseToken: reuseTokenKey?.value ? JSON.parse(reuseTokenKey?.value || false) : false
+                autoFetchToken: autoFetchTokenKey?.value ? JSON.parse(autoFetchTokenKey?.value || false) : false
               }
             : {}
       }

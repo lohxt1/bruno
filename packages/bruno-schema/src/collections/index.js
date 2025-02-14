@@ -227,7 +227,7 @@ const oauth2Schema = Yup.object({
     then: Yup.string().nullable(),
     otherwise: Yup.string().nullable().strip()
   }),
-  reuseToken: Yup.boolean().when('grantType', {
+  autoFetchToken: Yup.boolean().when('grantType', {
     is: (val) => ['client_credentials', 'password', 'authorization_code'].includes(val),
     then: Yup.boolean().default(false),
     otherwise: Yup.boolean()

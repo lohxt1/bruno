@@ -102,7 +102,7 @@ const setAuthHeaders = (axiosRequest, request, collectionRoot) => {
               tokenPlacement: get(collectionAuth, 'oauth2.tokenPlacement'),
               tokenHeaderPrefix: get(collectionAuth, 'oauth2.tokenHeaderPrefix'),
               tokenQueryKey: get(collectionAuth, 'oauth2.tokenQueryKey'),
-              reuseToken: get(collectionAuth, 'oauth2.reuseToken')
+              autoFetchToken: get(collectionAuth, 'oauth2.autoFetchToken')
             };
             break;
           case 'authorization_code':
@@ -121,7 +121,7 @@ const setAuthHeaders = (axiosRequest, request, collectionRoot) => {
               tokenPlacement: get(collectionAuth, 'oauth2.tokenPlacement'),
               tokenHeaderPrefix: get(collectionAuth, 'oauth2.tokenHeaderPrefix'),
               tokenQueryKey: get(collectionAuth, 'oauth2.tokenQueryKey'),
-              reuseToken: get(collectionAuth, 'oauth2.reuseToken')
+              autoFetchToken: get(collectionAuth, 'oauth2.autoFetchToken')
             };
             break;
           case 'client_credentials':
@@ -136,7 +136,7 @@ const setAuthHeaders = (axiosRequest, request, collectionRoot) => {
               tokenPlacement: get(collectionAuth, 'oauth2.tokenPlacement'),
               tokenHeaderPrefix: get(collectionAuth, 'oauth2.tokenHeaderPrefix'),
               tokenQueryKey: get(collectionAuth, 'oauth2.tokenQueryKey'),
-              reuseToken: get(collectionAuth, 'oauth2.reuseToken')
+              autoFetchToken: get(collectionAuth, 'oauth2.autoFetchToken')
             };
             break;
         }
@@ -194,7 +194,7 @@ const setAuthHeaders = (axiosRequest, request, collectionRoot) => {
               tokenPlacement: get(request, 'auth.oauth2.tokenPlacement'),
               tokenHeaderPrefix: get(request, 'auth.oauth2.tokenHeaderPrefix'),
               tokenQueryKey: get(request, 'auth.oauth2.tokenQueryKey'),
-              reuseToken: get(request, 'auth.oauth2.reuseToken')
+              autoFetchToken: get(request, 'auth.oauth2.autoFetchToken')
             };
             break;
           case 'authorization_code':
@@ -213,7 +213,7 @@ const setAuthHeaders = (axiosRequest, request, collectionRoot) => {
               tokenPlacement: get(request, 'auth.oauth2.tokenPlacement'),
               tokenHeaderPrefix: get(request, 'auth.oauth2.tokenHeaderPrefix'),
               tokenQueryKey: get(request, 'auth.oauth2.tokenQueryKey'),
-              reuseToken: get(request, 'auth.oauth2.reuseToken')
+              autoFetchToken: get(request, 'auth.oauth2.autoFetchToken')
             };
             break;
           case 'client_credentials':
@@ -228,7 +228,7 @@ const setAuthHeaders = (axiosRequest, request, collectionRoot) => {
               tokenPlacement: get(request, 'auth.oauth2.tokenPlacement'),
               tokenHeaderPrefix: get(request, 'auth.oauth2.tokenHeaderPrefix'),
               tokenQueryKey: get(request, 'auth.oauth2.tokenQueryKey'),
-              reuseToken: get(request, 'auth.oauth2.reuseToken')
+              autoFetchToken: get(request, 'auth.oauth2.autoFetchToken')
             };
             break;
         }

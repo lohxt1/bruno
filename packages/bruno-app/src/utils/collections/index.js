@@ -366,7 +366,7 @@ export const transformCollectionToSaveToExportAsFile = (collection, options = {}
                   tokenPlacement: get(si.request, 'auth.oauth2.tokenPlacement', 'header'),
                   tokenHeaderPrefix: get(si.request, 'auth.oauth2.tokenHeaderPrefix', 'Bearer'),
                   tokenQueryKey: get(si.request, 'auth.oauth2.tokenQueryKey', ''),
-                  reuseToken: get(si.request, 'auth.oauth2.reuseToken', false)
+                  autoFetchToken: get(si.request, 'auth.oauth2.autoFetchToken', false)
                 };
                 break;
               case 'authorization_code':
@@ -384,7 +384,7 @@ export const transformCollectionToSaveToExportAsFile = (collection, options = {}
                   tokenPlacement: get(si.request, 'auth.oauth2.tokenPlacement', 'header'),
                   tokenHeaderPrefix: get(si.request, 'auth.oauth2.tokenHeaderPrefix', 'Bearer'),
                   tokenQueryKey: get(si.request, 'auth.oauth2.tokenQueryKey', ''),
-                  reuseToken: get(si.request, 'auth.oauth2.reuseToken', false)
+                  autoFetchToken: get(si.request, 'auth.oauth2.autoFetchToken', false)
                 };
                 break;
               case 'client_credentials':
@@ -399,7 +399,7 @@ export const transformCollectionToSaveToExportAsFile = (collection, options = {}
                   tokenPlacement: get(si.request, 'auth.oauth2.tokenPlacement', 'header'),
                   tokenHeaderPrefix: get(si.request, 'auth.oauth2.tokenHeaderPrefix', 'Bearer'),
                   tokenQueryKey: get(si.request, 'auth.oauth2.tokenQueryKey', ''),
-                  reuseToken: get(si.request, 'auth.oauth2.reuseToken', false)
+                  autoFetchToken: get(si.request, 'auth.oauth2.autoFetchToken', false)
                 };
                 break;
             }

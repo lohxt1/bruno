@@ -23,6 +23,13 @@ const getStoredOauth2Credentials = ({ collectionUid, url, credentialsId }) => {
   return credentials;
 }
 
+const isTimestampExpired = (startTimestamp, expirationDurationInSeconds) => {
+  const currentTimestamp = Date.now(); // Current time in milliseconds
+  const expirationTimestamp = startTimestamp + expirationDurationInSeconds * 1000;
+  return currentTimestamp > expirationTimestamp;
+};
+
+
 // AUTHORIZATION CODE
 
 const getOAuth2TokenUsingAuthorizationCode = async ({ request, collectionUid, forceFetch = false }) => {
@@ -31,13 +38,19 @@ const getOAuth2TokenUsingAuthorizationCode = async ({ request, collectionUid, fo
 
   let requestCopy = cloneDeep(request);
   const oAuth = get(requestCopy, 'oauth2', {});
-  const { clientId, clientSecret, callbackUrl, scope, pkce, credentialsPlacement, authorizationUrl, credentialsId, reuseToken } = oAuth;
+  const { clientId, clientSecret, callbackUrl, scope, pkce, credentialsPlacement, authorizationUrl, credentialsId, autoFetchToken } = oAuth;
   const url = requestCopy?.oauth2?.accessTokenUrl;
 
-  if ((reuseToken || ALWAYS_REUSE_ACCESS_TOKEN____UNLESS_FETCHED_MANUALLY) && !forceFetch) {
-    const credentials = getStoredOauth2Credentials({ collectionUid, url, credentialsId }) || {};
-    return { collectionUid, url, credentials, credentialsId };
+  const credentials = getStoredOauth2Credentials({ collectionUid, url, credentialsId }) || {};
+  const areCredentialsPresent = Boolean(Object.keys(credentials)?.length > 0);
+  const { created_at, expires_in } = credentials;
+  const hasTokenExpired = isTimestampExpired(created_at, expires_in);
+  if (!areCredentialsPresent && autoFetchToken) {
+    if (!forceFetch) {
+      return { collectionUid, url, credentials, credentialsId };
+    }
   }
+  
   const { authorizationCode } = await getOAuth2AuthorizationCode(requestCopy, codeChallenge, collectionUid);
 
   requestCopy.method = 'POST';
@@ -63,6 +76,7 @@ const getOAuth2TokenUsingAuthorizationCode = async ({ request, collectionUid, fo
     const response = await axiosInstance(requestCopy);
     const responseData = Buffer.isBuffer(response.data) ? response.data?.toString() : response.data;
     const parsedResponseData = safeParseJSON(responseData);
+    parsedResponseData['created_at'] = Date.now();
     persistOauth2Credentials({ collectionUid, url, credentials: parsedResponseData, credentialsId });
     return { collectionUid, url, credentials: parsedResponseData, credentialsId };
   }
@@ -111,12 +125,14 @@ const getOAuth2AuthorizationCode = (request, codeChallenge, collectionUid) => {
 const getOAuth2TokenUsingClientCredentials = async ({ request, collectionUid, forceFetch = false }) => {
   let requestCopy = cloneDeep(request);
   const oAuth = get(requestCopy, 'oauth2', {});
-  const { clientId, clientSecret, scope, credentialsPlacement, credentialsId, reuseToken } = oAuth;
+  const { clientId, clientSecret, scope, credentialsPlacement, credentialsId, autoFetchToken } = oAuth;
 
   const url = requestCopy?.oauth2?.accessTokenUrl;
 
-  if ((reuseToken || ALWAYS_REUSE_ACCESS_TOKEN____UNLESS_FETCHED_MANUALLY) && !forceFetch) {
-    const credentials = getStoredOauth2Credentials({ collectionUid, url, credentialsId }) || {};
+  const credentials = getStoredOauth2Credentials({ collectionUid, url, credentialsId }) || {};
+  const { created_at, expires_in } = credentials;
+  const hasTokenExpired = isTimestampExpired(created_at, expires_in);
+  if (!autoFetchToken && !forceFetch) {
     return { collectionUid, url, credentials, credentialsId };
   }
 
@@ -143,6 +159,7 @@ const getOAuth2TokenUsingClientCredentials = async ({ request, collectionUid, fo
     const response = await axiosInstance(requestCopy);
     const responseData = Buffer.isBuffer(response.data) ? response.data?.toString() : response.data;
     const parsedResponseData = safeParseJSON(responseData);
+    parsedResponseData['created_at'] = Date.now();
     persistOauth2Credentials({ collectionUid, url, credentials: parsedResponseData, credentialsId });
     return { collectionUid, url, credentials: parsedResponseData, credentialsId };
   }
@@ -156,11 +173,13 @@ const getOAuth2TokenUsingClientCredentials = async ({ request, collectionUid, fo
 const getOAuth2TokenUsingPasswordCredentials = async ({ request, collectionUid, forceFetch = false }) => {
   let requestCopy = cloneDeep(request);
   const oAuth = get(requestCopy, 'oauth2', {});
-  const { username, password, clientId, clientSecret, scope, credentialsPlacement, credentialsId, reuseToken } = oAuth;
+  const { username, password, clientId, clientSecret, scope, credentialsPlacement, credentialsId, autoFetchToken } = oAuth;
   const url = requestCopy?.oauth2?.accessTokenUrl;
 
-  if ((reuseToken || ALWAYS_REUSE_ACCESS_TOKEN____UNLESS_FETCHED_MANUALLY) && !forceFetch) {
-    const credentials = getStoredOauth2Credentials({ collectionUid, url, credentialsId }) || {};
+  const credentials = getStoredOauth2Credentials({ collectionUid, url, credentialsId }) || {};
+  const { created_at, expires_in } = credentials;
+  const hasTokenExpired = isTimestampExpired(created_at, expires_in);
+  if (!autoFetchToken && !forceFetch) {
     return { collectionUid, url, credentials, credentialsId };
   }
 
@@ -188,6 +207,7 @@ const getOAuth2TokenUsingPasswordCredentials = async ({ request, collectionUid, 
     const response = await axiosInstance(requestCopy);
     const responseData = Buffer.isBuffer(response.data) ? response.data?.toString() : response.data;
     const parsedResponseData = safeParseJSON(responseData);
+    parsedResponseData['created_at'] = Date.now();
     persistOauth2Credentials({ collectionUid, url, credentials: parsedResponseData, credentialsId });
     return { collectionUid, url, credentials: parsedResponseData, credentialsId };
   }
@@ -226,6 +246,7 @@ const refreshOauth2Token = async (request, collectionUid) => {
       const response = await axiosInstance(requestCopy);
       const responseData = Buffer.isBuffer(response.data) ? response.data?.toString() : response.data;
       const parsedResponseData = safeParseJSON(responseData);
+      parsedResponseData['created_at'] = Date.now();
       persistOauth2Credentials({ collectionUid, url, credentials: parsedResponseData, credentialsId });
       return { collectionUid, url, credentials: parsedResponseData, credentialsId };
     }

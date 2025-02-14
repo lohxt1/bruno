@@ -2,7 +2,7 @@ import React, { useRef, forwardRef, useState } from 'react';
 import get from 'lodash/get';
 import { useTheme } from 'providers/Theme';
 import { useDispatch } from 'react-redux';
-import { IconCaretDown, IconLoader2, IconSettings, IconKey } from '@tabler/icons';
+import { IconCaretDown, IconLoader2, IconSettings, IconKey, IconHelp } from '@tabler/icons';
 import Dropdown from 'components/Dropdown';
 import SingleLineEditor from 'components/SingleLineEditor';
 import { clearOauth2Cache, fetchOauth2Credentials } from 'providers/ReduxStore/slices/collections/actions';
@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import Oauth2TokenViewer from '../Oauth2TokenViewer/index';
 import { cloneDeep } from 'lodash';
 import { interpolateStringUsingCollectionAndItem } from 'utils/collections/index';
+import InfoTip from 'components/InfoTip/index';
 
 const OAuth2AuthorizationCode = ({ save, item = {}, request, handleRun, updateAuth, collection }) => {
   const dispatch = useDispatch();
@@ -22,7 +23,7 @@ const OAuth2AuthorizationCode = ({ save, item = {}, request, handleRun, updateAu
 
   const oAuth = get(request, 'auth.oauth2', {});
   
-  const { callbackUrl, authorizationUrl, accessTokenUrl, clientId, clientSecret, scope, credentialsPlacement, state, pkce, credentialsId, tokenPlacement, tokenHeaderPrefix, tokenQueryKey, reuseToken } = oAuth;
+  const { callbackUrl, authorizationUrl, accessTokenUrl, clientId, clientSecret, scope, credentialsPlacement, state, pkce, credentialsId, tokenPlacement, tokenHeaderPrefix, tokenQueryKey, autoFetchToken } = oAuth;
 
   const TokenPlacementIcon = forwardRef((props, ref) => {
     return (
@@ -83,7 +84,7 @@ const OAuth2AuthorizationCode = ({ save, item = {}, request, handleRun, updateAu
           tokenPlacement,
           tokenHeaderPrefix,
           tokenQueryKey,
-          reuseToken,
+          autoFetchToken,
           [key]: value
         }
       })
@@ -110,7 +111,7 @@ const OAuth2AuthorizationCode = ({ save, item = {}, request, handleRun, updateAu
           tokenPlacement,
           tokenHeaderPrefix,
           tokenQueryKey,
-          reuseToken,
+          autoFetchToken,
           pkce: !Boolean(oAuth?.['pkce'])
         }
       })
@@ -270,6 +271,28 @@ const OAuth2AuthorizationCode = ({ save, item = {}, request, handleRun, updateAu
             </div>
           </div>
       }
+      <div className="flex items-center gap-2.5 mt-4">
+        <div className="flex items-center px-2.5 py-1.5 bg-indigo-50/50 dark:bg-indigo-500/10 rounded-md">
+          <IconSettings size={14} className="text-indigo-500 dark:text-indigo-400" />
+        </div>
+        <span className="text-sm font-medium">Settings</span>
+      </div>
+
+      {/* Automatically Fetch Token */}
+      <div className="flex items-center gap-4 w-full">
+        <input
+          type="checkbox"
+          checked={autoFetchToken}
+          onChange={(e) => handleChange('autoFetchToken', e.target.checked)}
+          className="cursor-pointer ml-1"
+        />
+        <label className="block min-w-[140px]">Automatically fetch token if not found</label>
+        <InfoTip
+          text="Automatically fetch a new token when you try to access a resource and don’t have one."
+          infotipId="auto-fetch-token-infotip"
+        />
+      </div>
+
       <div className="flex flex-row gap-4 mt-4">
         <button onClick={handleFetchOauth2Credentials} className={`submit btn btn-sm btn-secondary w-fit flex flex-row`}>
           Get Access Token{fetchingToken? <IconLoader2 className="animate-spin ml-2" size={18} strokeWidth={1.5} /> : ""}
