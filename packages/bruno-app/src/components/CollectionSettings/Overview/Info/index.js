@@ -2,12 +2,13 @@ import React from "react";
 import { getTotalRequestCountInCollection } from 'utils/collections/';
 import { IconFolder, IconWorld, IconApi, IconClock } from '@tabler/icons';
 import { areItemsLoading, getItemsLoadStats } from "utils/collections/index";
+import useLoadingDebounce from "hooks/useLoadingDebounce";
 
 const Info = ({ collection }) => {
   const totalRequestsInCollection = getTotalRequestCountInCollection(collection);
-
-  const isCollectionLoading = areItemsLoading(collection);
+  const actualIsLoading = areItemsLoading(collection);
   const { loading: itemsLoadingCount, total: totalItems } = getItemsLoadStats(collection);
+  const debouncedLoading = useLoadingDebounce(actualIsLoading);
 
   return (
     <div className="w-full flex flex-col h-fit">
@@ -48,7 +49,7 @@ const Info = ({ collection }) => {
               <div className="font-semibold text-sm">Requests</div>
               <div className="mt-1 text-sm text-muted font-mono">
                 {
-                  isCollectionLoading? `${totalItems - itemsLoadingCount} out of ${totalItems} requests in the collection loaded` : `${totalRequestsInCollection} request${totalRequestsInCollection !== 1 ? 's' : ''} in collection`
+                  debouncedLoading? `${totalItems - itemsLoadingCount} out of ${totalItems} requests in the collection loaded` : `${totalRequestsInCollection} request${totalRequestsInCollection !== 1 ? 's' : ''} in collection`
                 }
               </div>
             </div>

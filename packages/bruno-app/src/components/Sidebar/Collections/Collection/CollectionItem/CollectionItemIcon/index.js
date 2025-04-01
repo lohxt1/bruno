@@ -2,12 +2,12 @@ import RequestMethod from "../RequestMethod";
 import { IconLoader2, IconAlertTriangle, IconAlertCircle } from '@tabler/icons';
 import StyledWrapper from "./StyledWrapper";
 
-const CollectionItemIcon = ({ item }) => {
+const CollectionItemIcon = ({ item, debouncedLoading }) => {
   if (item?.error) {
     return <StyledWrapper><IconAlertCircle className="w-fit mr-2 error" size={18} strokeWidth={1.5} /></StyledWrapper>;
   }
 
-  if (item?.loading) {
+  if (debouncedLoading) {
     return <IconLoader2 className="animate-spin w-fit mr-2" size={18} strokeWidth={1.5} />;
   }
 

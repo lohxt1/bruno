@@ -22,6 +22,7 @@ import StyledWrapper from './StyledWrapper';
 import CloneCollection from './CloneCollection';
 import { areItemsLoading, findItemInCollection } from 'utils/collections';
 import { scrollToTheActiveTab } from 'utils/tabs';
+import useLoadingDebounce from "hooks/useLoadingDebounce";
 
 const Collection = ({ collection, searchText }) => {
   const [showNewFolderModal, setShowNewFolderModal] = useState(false);
@@ -32,7 +33,8 @@ const Collection = ({ collection, searchText }) => {
   const [showRemoveCollectionModal, setShowRemoveCollectionModal] = useState(false);
   const tabs = useSelector((state) => state.tabs.tabs);
   const dispatch = useDispatch();
-  const isLoading = areItemsLoading(collection);
+  const actualIsLoading = areItemsLoading(collection);
+  const debouncedLoading = useLoadingDebounce(actualIsLoading);
   const collectionRef = useRef(null);
 
   const menuDropdownTippyRef = useRef();
@@ -218,7 +220,7 @@ const Collection = ({ collection, searchText }) => {
           <div className="ml-1" id="sidebar-collection-name">
             {collection.name}
           </div>
-          {isLoading ? <IconLoader2 className="animate-spin mx-1" size={18} strokeWidth={1.5} /> : null}
+          {debouncedLoading ? <IconLoader2 className="animate-spin mx-1" size={18} strokeWidth={1.5} /> : null}
         </div>
         <div className="collection-actions">
           <Dropdown onCreate={onMenuDropdownCreate} icon={<MenuIcon />} placement="bottom-start">

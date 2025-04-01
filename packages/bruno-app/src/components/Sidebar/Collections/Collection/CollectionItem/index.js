@@ -23,10 +23,10 @@ import { hideHomePage } from 'providers/ReduxStore/slices/app';
 import toast from 'react-hot-toast';
 import StyledWrapper from './StyledWrapper';
 import NetworkError from 'components/ResponsePane/NetworkError/index';
-import { findItemInCollection } from 'utils/collections';
 import CollectionItemIcon from './CollectionItemIcon';
 import { scrollToTheActiveTab } from 'utils/tabs';
 import useIsVisible from 'hooks/useVisible/index';
+import useLoadingDebounce from "hooks/useLoadingDebounce";
 
 const CollectionItem = ({ item, collection, searchText }) => {
   const tabs = useSelector((state) => state.tabs.tabs);
@@ -34,6 +34,8 @@ const CollectionItem = ({ item, collection, searchText }) => {
   const isSidebarDragging = useSelector((state) => state.app.isDragging);
   const dispatch = useDispatch();
   const collectionItemRef = useRef(null);
+  const isItemLoading = item?.loading;
+  const debouncedLoading = useLoadingDebounce(isItemLoading);
 
   const [renameItemModalOpen, setRenameItemModalOpen] = useState(false);
   const [cloneItemModalOpen, setCloneItemModalOpen] = useState(false);
@@ -310,7 +312,7 @@ const CollectionItem = ({ item, collection, searchText }) => {
             <div 
               className="ml-1 flex w-full h-full items-center overflow-hidden"
             >
-              <CollectionItemIcon item={item} />
+              <CollectionItemIcon item={item} debouncedLoading={debouncedLoading} />
               <span className="item-name" title={item.name}>
                 {item.name}
               </span>

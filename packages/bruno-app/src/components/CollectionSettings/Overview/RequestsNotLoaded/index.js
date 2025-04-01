@@ -7,12 +7,22 @@ import { isItemARequest, itemIsOpenedInTabs } from 'utils/tabs/index';
 import { getDefaultRequestPaneTab } from 'utils/collections/index';
 import { addTab, focusTab } from 'providers/ReduxStore/slices/tabs';
 import { hideHomePage } from 'providers/ReduxStore/slices/app';
+import useLoadingDebounceMap from 'hooks/useLoadingDebounceMap';
 
 const RequestsNotLoaded = ({ collection }) => {
   const dispatch = useDispatch();
   const tabs = useSelector((state) => state.tabs.tabs);
   const flattenedItems = flattenItems(collection.items);
-  const itemsFailedLoading = flattenedItems?.filter(item => item?.partial && !item?.loading);
+  
+  const debouncedLoadingState = useLoadingDebounceMap(
+    flattenedItems,
+    (item) => item.uid,
+    (item) => item.loading
+  );
+  
+  const itemsFailedLoading = flattenedItems?.filter(
+    item => item?.partial && !item?.loading && !debouncedLoadingState[item.uid]
+  );
 
   if (!itemsFailedLoading?.length) {
     return null;
@@ -60,7 +70,7 @@ const RequestsNotLoaded = ({ collection }) => {
         </thead>
         <tbody>
           {flattenedItems?.map((item, index) => (
-            item?.partial && !item?.loading ? (
+            item?.partial && !item?.loading && !debouncedLoadingState[item.uid] ? (
               <tr key={index} className='cursor-pointer' onClick={handleRequestClick(item)}>
                 <td className="py-1.5 px-3">
                   {item?.pathname?.split(`${collection?.pathname}/`)?.[1]}

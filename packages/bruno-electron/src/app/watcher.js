@@ -259,6 +259,16 @@ const add = async (win, pathname, collectionUid, collectionPath, useWorkerThread
     // If worker thread is not used, we can directly parse the file
     if (!useWorkerThread) {
       try {
+        // First, send a loading state to the UI
+        const metaJson = await bruToJson(parseBruFileMeta(bruContent), true);
+        file.data = metaJson;
+        file.partial = true;
+        file.loading = true;
+        file.size = sizeInMB(fileStats?.size);
+        hydrateRequestWithUuid(file.data, pathname);
+        win.webContents.send('main:collection-tree-updated', 'addFile', file);
+
+        // Then process the file
         file.data = await bruToJson(bruContent);
         file.partial = false;
         file.loading = false;
@@ -267,6 +277,19 @@ const add = async (win, pathname, collectionUid, collectionPath, useWorkerThread
         win.webContents.send('main:collection-tree-updated', 'addFile', file);
       } catch (error) {
         console.error(error);
+        // In case of error, clear the loading state
+        file.data = {
+          name: path.basename(pathname),
+          type: 'http-request'
+        };
+        file.error = {
+          message: error?.message
+        };
+        file.partial = true;
+        file.loading = false;
+        file.size = sizeInMB(fileStats?.size);
+        hydrateRequestWithUuid(file.data, pathname);
+        win.webContents.send('main:collection-tree-updated', 'addFile', file);
       }
       return;
     }

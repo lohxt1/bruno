@@ -867,7 +867,7 @@ const registerRendererEventHandlers = (mainWindow, watcher, lastOpenedCollection
         mainWindow.webContents.send('main:collection-tree-updated', 'addFile', file);
         file.data = bruToJson(bruContent);
         file.partial = false;
-        file.loading = true;
+        file.loading = false;
         file.size = sizeInMB(fileStats?.size);
         hydrateRequestWithUuid(file.data, pathname);
         mainWindow.webContents.send('main:collection-tree-updated', 'addFile', file);
