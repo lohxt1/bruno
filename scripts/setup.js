@@ -67,6 +67,20 @@ async function setup() {
       fs.rmSync(dir, { recursive: true, force: true });
     }
 
+    // Clean existing package dist builds
+    console.log(`\n${icons.clean} Cleaning up dist build directories...`);
+    const distBuildsPaths = [
+      './packages/bruno-graphql-docs/dist',
+      './packages/bruno-query/dist',
+      './packages/bruno-common/dist',
+      './packages/bruno-converters/dist',
+      './packages/bruno-requests/dist'
+    ];
+    for (const dir of distBuildsPaths) {
+      console.log(`${icons.delete} Removing ${dir}`);
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+
     // Install dependencies
     execCommand('npm i --legacy-peer-deps', 'Installing dependencies');
 
