@@ -25,7 +25,7 @@
     ]
   },
   "dependencies": {
-    "@aws-sdk/credential-providers": "3.750.0",
+    "@aws-sdk/credential-providers": "3.797.0",
     "@faker-js/faker": "^9.5.1",
     "@usebruno/common": "0.1.0",
     "@usebruno/js": "0.12.0",
