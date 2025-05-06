@@ -69,18 +69,10 @@ const Wrapper = styled.div`
       transition: ${(props) => props.theme.dragAndDrop.transition};
     }
 
-    &.drop-target-above {
+    &.drop-target-adjacent {
       border: none;
       border-top: ${(props) => props.theme.dragAndDrop.borderStyle} ${(props) => props.theme.dragAndDrop.border};
       margin-top: -2px;
-      background: transparent;
-      transition: ${(props) => props.theme.dragAndDrop.transition};
-    }
-
-    &.drop-target-below {
-      border: none;
-      border-bottom: ${(props) => props.theme.dragAndDrop.borderStyle} ${(props) => props.theme.dragAndDrop.border};
-      margin-bottom: -2px;
       background: transparent;
       transition: ${(props) => props.theme.dragAndDrop.transition};
     }

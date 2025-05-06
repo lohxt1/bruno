@@ -1,6 +1,5 @@
 import React from 'react';
 import { IconFolder, IconFile } from '@tabler/icons';
-import path from 'utils/common/path';
 import StyledWrapper from './StyledWrapper';
 
 const PathDisplay = ({ 

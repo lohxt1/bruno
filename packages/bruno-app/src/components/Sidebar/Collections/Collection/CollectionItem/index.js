@@ -152,7 +152,7 @@ const CollectionItem = ({ item, collectionUid, collectionPathname, searchText })
     'item-focused-in-tab': isTabForItemActive,
     'item-hovered': isOver && canDrop,
     'drop-target': isOver && dropType === 'inside',
-    'drop-target-above': isOver && dropType === 'adjacent'
+    'drop-target-adjacent': isOver && dropType === 'adjacent'
   });
 
   const handleRun = async () => {
@@ -295,19 +295,19 @@ const CollectionItem = ({ item, collectionUid, collectionPathname, searchText })
   return (
     <StyledWrapper className={className}>
       {renameItemModalOpen && (
-        <RenameCollectionItem item={item} collectionUid={collectionUid} collectionPathname={collectionPathname} onClose={() => setRenameItemModalOpen(false)} />
+        <RenameCollectionItem item={item} collectionUid={collectionUid} onClose={() => setRenameItemModalOpen(false)} />
       )}
       {cloneItemModalOpen && (
-        <CloneCollectionItem item={item} collectionUid={collectionUid} collectionPathname={collectionPathname} onClose={() => setCloneItemModalOpen(false)} />
+        <CloneCollectionItem item={item} collectionUid={collectionUid} onClose={() => setCloneItemModalOpen(false)} />
       )}
       {deleteItemModalOpen && (
-        <DeleteCollectionItem item={item} collectionUid={collectionUid} collectionPathname={collectionPathname} onClose={() => setDeleteItemModalOpen(false)} />
+        <DeleteCollectionItem item={item} collectionUid={collectionUid} onClose={() => setDeleteItemModalOpen(false)} />
       )}
       {newRequestModalOpen && (
-        <NewRequest item={item} collectionUid={collectionUid} collectionPathname={collectionPathname} onClose={() => setNewRequestModalOpen(false)} />
+        <NewRequest item={item} collectionUid={collectionUid} onClose={() => setNewRequestModalOpen(false)} />
       )}
       {newFolderModalOpen && (
-        <NewFolder item={item} collectionUid={collectionUid} collectionPathname={collectionPathname} onClose={() => setNewFolderModalOpen(false)} />
+        <NewFolder item={item} collectionUid={collectionUid} onClose={() => setNewFolderModalOpen(false)} />
       )}
       {runCollectionModalOpen && (
         <RunCollectionItem collectionUid={collectionUid} item={item} onClose={() => setRunCollectionModalOpen(false)} />

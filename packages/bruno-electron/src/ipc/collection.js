@@ -768,7 +768,7 @@ const registerRendererEventHandlers = (mainWindow, watcher, lastOpenedCollection
           }
           const content = await jsonToCollectionBru(folderBruJsonData);
           await writeFile(folderRootPath, content);
-        } else {
+        } else if (item?.type === 'http-request' || item?.type === 'graphql-request') {
           if (fs.existsSync(item.pathname)) {
             const itemToSave = transformRequestToSaveToFilesystem(item);
             const content = await jsonToBruViaWorker(itemToSave);

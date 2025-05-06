@@ -56,15 +56,8 @@ const Wrapper = styled.div`
       }
     }
 
-    &.drop-target-above {
+    &.drop-target-adjacent {
       &::before {
-        opacity: 1;
-        height: 2px;
-      }
-    }
-
-    &.drop-target-below {
-      &::after {
         opacity: 1;
         height: 2px;
       }
