@@ -6,7 +6,7 @@ import {
 import StyledWrapper from './StyledWrapper';
 
 function getItemStyles({ x, y }) {
-  if (Number.isNaN(x) || Number.isNaN(y)) return { display: 'none' };
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return { display: 'none' };
   const transform = `translate(${x}px, ${y}px)`;
 
   return {
