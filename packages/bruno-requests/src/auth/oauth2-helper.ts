@@ -1,68 +1,29 @@
 import axios, { AxiosError } from 'axios';
 import qs from 'qs';
-
-export interface TokenStore {
-  saveToken(serviceId: string, account: string, token: any): Promise<boolean>;
-  getToken(serviceId: string, account: string): Promise<any>;
-  deleteToken(serviceId: string, account: string): Promise<boolean>;
-}
-
-export interface OAuth2Config {
-  grantType: 'client_credentials' | 'password';
-  accessTokenUrl: string;
-  clientId?: string;
-  clientSecret?: string;
-  username?: string;
-  password?: string;
-  scope?: string;
-  credentialsPlacement?: 'header' | 'body';
-}
-
-interface RequestConfig {
-  headers: {
-    'Content-Type': string;
-    'Authorization'?: string;
-  };
-}
-
-interface ClientCredentialsData {
-  grant_type: string;
-  scope: string;
-  client_id?: string;
-  client_secret?: string;
-}
-
-interface PasswordGrantData {
-  grant_type: string;
-  username: string;
-  password: string;
-  scope: string;
-  client_id?: string;
-  client_secret?: string;
-}
+import { T_ClientCredentialsGrantTypeConfig, T_ClientCredentialsGrantTypeRequestData, T_OAuth2Config, T_PasswordGrantTypeConfig, T_PasswordGrantTypeRequestData, T_RequestConfig, T_TokenStore } from './types/oaut2-helper';
 
 /**
  * Fetches an OAuth2 token using client credentials grant
  */
-const fetchTokenClientCredentials = async (oauth2Config: OAuth2Config) => {
+const fetchTokenClientCredentials = async (clientCredentialsConfig: T_ClientCredentialsGrantTypeConfig) => {
   const {
     accessTokenUrl,
     clientId,
     clientSecret,
     scope,
     credentialsPlacement = 'header'
-  } = oauth2Config;
+  } = clientCredentialsConfig;
 
   if (!accessTokenUrl || !clientId) {
     throw new Error('Missing required OAuth2 parameters');
   }
 
-  const data: ClientCredentialsData = {
+  const data: T_ClientCredentialsGrantTypeRequestData = {
     grant_type: 'client_credentials',
     scope: scope || ''
   };
 
-  const config: RequestConfig = {
+  const config: T_RequestConfig = {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     }
@@ -93,7 +54,7 @@ const fetchTokenClientCredentials = async (oauth2Config: OAuth2Config) => {
 /**
  * Fetches an OAuth2 token using password grant
  */
-const fetchTokenPassword = async (oauth2Config: OAuth2Config) => {
+const fetchTokenPassword = async (oauth2Config: T_PasswordGrantTypeConfig) => {
   const {
     accessTokenUrl,
     clientId,
@@ -108,14 +69,14 @@ const fetchTokenPassword = async (oauth2Config: OAuth2Config) => {
     throw new Error('Missing required OAuth2 parameters for password grant');
   }
 
-  const data: PasswordGrantData = {
+  const data: T_PasswordGrantTypeRequestData = {
     grant_type: 'password',
     username,
     password,
     scope: scope || ''
   };
 
-  const config: RequestConfig = {
+  const config: T_RequestConfig = {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     }
@@ -149,7 +110,7 @@ const fetchTokenPassword = async (oauth2Config: OAuth2Config) => {
 /**
  * Manages OAuth2 token retrieval and storage
  */
-export const getOAuth2Token = async (oauth2Config: OAuth2Config, tokenStore: TokenStore): Promise<string | null> => {
+export const getOAuth2Token = async (oauth2Config: T_OAuth2Config, tokenStore: T_TokenStore): Promise<string | null> => {
   const { grantType, clientId, accessTokenUrl } = oauth2Config;
   
   if (!grantType || !accessTokenUrl) {
@@ -157,10 +118,19 @@ export const getOAuth2Token = async (oauth2Config: OAuth2Config, tokenStore: Tok
   }
 
   const serviceId = accessTokenUrl;
-  const account = clientId || oauth2Config.username || 'default';
+  let account;
+  if (grantType == 'client_credentials') {
+    account = clientId;
+  }
+  else if (grantType == 'password') {
+    account = oauth2Config.username
+  }
+  else {
+    account = 'default';
+  }
 
   // Check if we already have a token stored
-  const existingToken = await tokenStore.getToken(serviceId, account);
+  const existingToken = await tokenStore.getToken(serviceId, account!);
   
   if (existingToken) {
     // Check if token is expired
@@ -187,7 +157,7 @@ export const getOAuth2Token = async (oauth2Config: OAuth2Config, tokenStore: Tok
     }
 
     // Store the token
-    await tokenStore.saveToken(serviceId, account, tokenResponse);
+    await tokenStore.saveToken(serviceId, account!, tokenResponse);
     
     return tokenResponse.access_token;
   } catch (error) {
