@@ -150,7 +150,36 @@ const getCertsAndProxyConfig = async ({
     proxyMode = get(proxyConfig, 'mode', 'off');
   }
   
-  return { proxyMode, proxyConfig, httpsAgentRequestFields, interpolationOptions };
+  const interpolatedProxyConfig = { ...proxyConfig };
+  
+  // Interpolate basic proxy fields
+  if (proxyConfig.protocol) {
+    interpolatedProxyConfig.protocol = interpolateString(proxyConfig.protocol, interpolationOptions);
+  }
+  if (proxyConfig.hostname) {
+    interpolatedProxyConfig.hostname = interpolateString(proxyConfig.hostname, interpolationOptions);
+  }
+  if (proxyConfig.port) {
+    interpolatedProxyConfig.port = interpolateString(proxyConfig.port, interpolationOptions);
+  }
+  if (proxyConfig.bypassProxy) {
+    interpolatedProxyConfig.bypassProxy = interpolateString(proxyConfig.bypassProxy, interpolationOptions);
+  }
+  
+  // Interpolate auth fields if present
+  if (proxyConfig.auth) {
+    interpolatedProxyConfig.auth = { ...proxyConfig.auth };
+    if (proxyConfig.auth.username) {
+      interpolatedProxyConfig.auth.username = interpolateString(proxyConfig.auth.username, interpolationOptions);
+    }
+    if (proxyConfig.auth.password) {
+      interpolatedProxyConfig.auth.password = interpolateString(proxyConfig.auth.password, interpolationOptions);
+    }
+  }
+  
+  proxyConfig = interpolatedProxyConfig;
+  
+  return { proxyMode, proxyConfig, httpsAgentRequestFields };
 }
 
 const configureRequest = async (
@@ -174,6 +203,7 @@ const configureRequest = async (
     processEnvVars,
     collectionPath
   });
+  request.certsAndProxyConfig = certsAndProxyConfig;
 
   let requestMaxRedirects = request.maxRedirects
   request.maxRedirects = 0
@@ -183,13 +213,12 @@ const configureRequest = async (
     requestMaxRedirects = 5; // Default to 5 redirects
   }
 
-  let { proxyMode, proxyConfig, httpsAgentRequestFields, interpolationOptions } = certsAndProxyConfig;
+  let { proxyMode, proxyConfig, httpsAgentRequestFields } = certsAndProxyConfig;
   let axiosInstance = makeAxiosInstance({
     proxyMode,
     proxyConfig,
     requestMaxRedirects,
-    httpsAgentRequestFields,
-    interpolationOptions
+    httpsAgentRequestFields
   });
 
   if (request.ntlmConfig) {
@@ -410,6 +439,15 @@ const registerNetworkIpc = (mainWindow) => {
     scriptingConfig,
     runRequestByItemPathname
   ) => {
+    const certsAndProxyConfig = await getCertsAndProxyConfig({
+      collectionUid,
+      request,
+      envVars,
+      runtimeVariables,
+      processEnvVars,
+      collectionPath
+    });
+
     // run pre-request script
     let scriptResult;
     const collectionName = collection?.name
@@ -426,7 +464,8 @@ const registerNetworkIpc = (mainWindow) => {
         processEnvVars,
         scriptingConfig,
         runRequestByItemPathname,
-        collectionName
+        collectionName,
+        certsAndProxyConfig
       );
 
       mainWindow.webContents.send('main:script-environment-update', {
@@ -593,7 +632,6 @@ const registerNetworkIpc = (mainWindow) => {
     try {
       request.signal = abortController.signal;
       saveCancelToken(cancelTokenUid, abortController);
-
       
       try {
         const preRequestScriptResult = await runPreRequest(
