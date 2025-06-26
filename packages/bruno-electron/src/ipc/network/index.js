@@ -475,6 +475,15 @@ const registerNetworkIpc = (mainWindow) => {
         collectionUid
       });
 
+      // Send script timelines to renderer if available
+      if (scriptResult?.timelines && scriptResult.timelines.length > 0) {
+        mainWindow.webContents.send('main:script-timelines', {
+          collectionUid,
+          itemUid: request.uid,
+          timelines: scriptResult.timelines
+        });
+      }
+
       mainWindow.webContents.send('main:global-environment-variables-update', {
         globalEnvironmentVariables: scriptResult.globalEnvironmentVariables
       });
@@ -589,6 +598,16 @@ const registerNetworkIpc = (mainWindow) => {
 
       collection.globalEnvironmentVariables = scriptResult.globalEnvironmentVariables;
     }
+
+    // Send script timelines to renderer if available
+    if (scriptResult?.timelines && scriptResult.timelines.length > 0) {
+      mainWindow.webContents.send('main:script-timelines', {
+        collectionUid,
+        itemUid: request.uid,
+        timelines: scriptResult.timelines
+      });
+    }
+
     return scriptResult;
   };
 
@@ -624,6 +643,7 @@ const registerNetworkIpc = (mainWindow) => {
 
     const abortController = new AbortController();
     const request = await prepareRequest(item, collection, abortController);
+    request.uid = item.uid;
     request.__bruno__executionMode = 'standalone';
     const brunoConfig = getBrunoConfig(collectionUid);
     const scriptingConfig = get(brunoConfig, 'scripts', {});
@@ -795,6 +815,7 @@ const registerNetworkIpc = (mainWindow) => {
             collectionUid
           });
         }
+
         !runInBackground && mainWindow.webContents.send('main:run-request-event', {
           type: 'post-response-script-execution',
           requestUid,
@@ -884,6 +905,15 @@ const registerNetworkIpc = (mainWindow) => {
           requestUid,
           collectionUid
         });
+
+        // Send script timelines to renderer if available
+        if (testResults?.timelines && testResults.timelines.length > 0) {
+          mainWindow.webContents.send('main:script-timelines', {
+            collectionUid,
+            itemUid: item.uid,
+            timelines: testResults.timelines
+          });
+        }
 
         mainWindow.webContents.send('main:script-environment-update', {
           envVariables: testResults.envVariables,
@@ -1064,6 +1094,7 @@ const registerNetworkIpc = (mainWindow) => {
           });
 
           const request = await prepareRequest(item, collection, abortController);
+          request.uid = item.uid;
           request.__bruno__executionMode = 'runner';
           
           const requestUid = uuid();
@@ -1310,6 +1341,15 @@ const registerNetworkIpc = (mainWindow) => {
                   testResults: testResults.results,
                   ...eventData
                 });
+
+                // Send script timelines to renderer if available
+                if (testResults?.timelines && testResults.timelines.length > 0) {
+                  mainWindow.webContents.send('main:script-timelines', {
+                    collectionUid,
+                    itemUid: item.uid,
+                    timelines: testResults.timelines
+                  });
+                }
 
                 mainWindow.webContents.send('main:script-environment-update', {
                   envVariables: testResults.envVariables,

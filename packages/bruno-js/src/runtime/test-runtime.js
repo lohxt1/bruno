@@ -92,7 +92,8 @@ class TestRuntime {
         runtimeVariables,
         globalEnvironmentVariables,
         results: __brunoTestResults.getResults(),
-        nextRequestName: bru.nextRequest
+        nextRequestName: bru.nextRequest,
+        timelines: bru.getTimelines()
       };
     }
 
@@ -187,7 +188,8 @@ class TestRuntime {
       runtimeVariables: cleanJson(runtimeVariables),
       globalEnvironmentVariables: cleanJson(globalEnvironmentVariables),
       results: cleanJson(__brunoTestResults.getResults()),
-      nextRequestName: bru.nextRequest
+      nextRequestName: bru.nextRequest,
+      timelines: bru.getTimelines()
     };
 
     if (scriptError) {

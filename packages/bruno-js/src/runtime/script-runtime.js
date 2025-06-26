@@ -129,7 +129,8 @@ class ScriptRuntime {
         results: cleanJson(__brunoTestResults.getResults()),
         nextRequestName: bru.nextRequest,
         skipRequest: bru.skipRequest,
-        stopExecution: bru.stopExecution
+        stopExecution: bru.stopExecution,
+        timelines: bru.getTimelines()
       };
     }
 
@@ -184,7 +185,8 @@ class ScriptRuntime {
       results: cleanJson(__brunoTestResults.getResults()),
       nextRequestName: bru.nextRequest,
       skipRequest: bru.skipRequest,
-      stopExecution: bru.stopExecution
+      stopExecution: bru.stopExecution,
+      timelines: bru.getTimelines()
     };
   }
 
@@ -277,7 +279,8 @@ class ScriptRuntime {
         results: cleanJson(__brunoTestResults.getResults()),
         nextRequestName: bru.nextRequest,
         skipRequest: bru.skipRequest,
-        stopExecution: bru.stopExecution
+        stopExecution: bru.stopExecution,
+        timelines: bru.getTimelines()
       };
     }
 
@@ -332,7 +335,8 @@ class ScriptRuntime {
       results: cleanJson(__brunoTestResults.getResults()),
       nextRequestName: bru.nextRequest,
       skipRequest: bru.skipRequest,
-      stopExecution: bru.stopExecution
+      stopExecution: bru.stopExecution,
+      timelines: bru.getTimelines()
     };
   }
 }
