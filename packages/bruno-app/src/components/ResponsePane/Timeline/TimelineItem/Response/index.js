@@ -16,14 +16,14 @@ const safeStringifyJSONIfNotString = (obj) => {
   }
 };
 
-const Response = ({ collection, response, item, width }) => {
+const Response = ({ collection, response, item }) => {
   let { status, statusCode, statusText, dataBuffer, headers, data, error } = response || {};
   if (!dataBuffer) {
     dataBuffer = Buffer.from(safeStringifyJSONIfNotString(data))?.toString('base64');
   }
 
   return (
-    <div>
+    <div className="break-all">
     {/* Status */}
     <div className="mb-1">
       <Status statusCode={status || statusCode} statusText={statusText} />
@@ -35,7 +35,7 @@ const Response = ({ collection, response, item, width }) => {
     <Headers headers={headers} type={'response'} />
 
     {/* Body */}
-    <BodyBlock collection={collection} data={data} dataBuffer={dataBuffer} error={error} headers={headers} item={item} width={width} />
+    <BodyBlock collection={collection} data={data} dataBuffer={dataBuffer} error={error} headers={headers} item={item} />
   </div>
   )
 }

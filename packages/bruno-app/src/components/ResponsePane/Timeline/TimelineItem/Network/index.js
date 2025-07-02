@@ -1,6 +1,6 @@
 const Network = ({ logs }) => {
   return (
-    <div className="bg-black/5 text-white network-logs rounded overflow-auto h-96">
+    <div className="bg-black/5 text-white network-logs rounded overflow-auto h-96 break-all">
       <pre className="whitespace-pre-wrap">
         {logs.map((currentLog, index) => {
           if (index > 0 && currentLog?.type === 'separator') {
