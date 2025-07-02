@@ -17,7 +17,6 @@ const StyledWrapper = styled.div`
   /* Grid container - enforces boundaries */
   .grid-boundary {
     width: 100%;
-    display: grid;
     overflow-y: auto;
   }
 `;
