@@ -123,11 +123,14 @@ const getOAuth2TokenUsingAuthorizationCode = async ({ request, collectionUid, fo
   // Fetch new token process
   const { authorizationCode, debugInfo } = await getOAuth2AuthorizationCode(requestCopy, codeChallenge, collectionUid);
 
-  requestCopy.method = 'POST';
-  requestCopy.headers['content-type'] = 'application/x-www-form-urlencoded';
-  requestCopy.headers['Accept'] = 'application/json';
+  let axiosRequestConfig = {};
+  axiosRequestConfig.method = 'POST';
+  axiosRequestConfig.headers = {
+    'content-type': 'application/x-www-form-urlencoded',
+    'Accept': 'application/json',
+  };
   if (credentialsPlacement === "basic_auth_header") {
-    requestCopy.headers['Authorization'] = `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`;
+    axiosRequestConfig.headers['Authorization'] = `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`;
   }
   const data = {
     grant_type: 'authorization_code',
@@ -144,16 +147,21 @@ const getOAuth2TokenUsingAuthorizationCode = async ({ request, collectionUid, fo
   if (scope && scope.trim() !== '') {
     data.scope = scope;
   }
-  requestCopy.data = qs.stringify(data);
-  requestCopy.url = url;
-  requestCopy.responseType = 'arraybuffer';
+  axiosRequestConfig.data = qs.stringify(data);
+  axiosRequestConfig.url = url;
+  axiosRequestConfig.responseType = 'arraybuffer';
   try {
     const { proxyMode, proxyConfig, httpsAgentRequestFields, interpolationOptions } = certsAndProxyConfig;
     const axiosInstance = makeAxiosInstance({ proxyMode, proxyConfig, httpsAgentRequestFields, interpolationOptions });
-    let responseInfo, parsedResponseData;
+    let requestInfo, responseInfo, parsedResponseData;
     try {
-      const response = await axiosInstance(requestCopy);
+      const response = await axiosInstance(axiosRequestConfig);
       parsedResponseData = safeParseJSONBuffer(response.data);
+      requestInfo = {
+        url: response.config?.url,
+        headers: response.config?.headers,
+        data: response.config?.data
+      };
       responseInfo = {
         url: response?.url,
         status: response?.status,
@@ -166,6 +174,11 @@ const getOAuth2TokenUsingAuthorizationCode = async ({ request, collectionUid, fo
     }
     catch(error) {
       if (error.response) {
+        requestInfo = {
+          url: error?.config?.url,
+          headers: error?.config?.headers,
+          data: error?.config?.data
+        };
         responseInfo = {
           url: error?.response?.url,
           status: error?.response?.status,
@@ -178,10 +191,15 @@ const getOAuth2TokenUsingAuthorizationCode = async ({ request, collectionUid, fo
         };
       }
       else if(error?.code) {
+        requestInfo = {
+          url: axiosRequestConfig?.url,
+          headers: axiosRequestConfig?.headers,
+          data: axiosRequestConfig?.data
+        };
         responseInfo = {
           status: '-',
           statusText: error?.code,
-          headers: error?.config?.headers,
+          headers: {},
           data: safeStringifyJSON(error?.errors),
           timeline: error?.response?.timeline
         };
@@ -200,8 +218,8 @@ const getOAuth2TokenUsingAuthorizationCode = async ({ request, collectionUid, fo
       request: {
         url: url,
         method: 'POST',
-        headers: requestCopy?.headers,
-        data: requestCopy?.data,
+        headers: requestInfo?.headers,
+        data: requestInfo?.data,
         error: null
       },
       response: {
@@ -331,11 +349,14 @@ const getOAuth2TokenUsingClientCredentials = async ({ request, collectionUid, fo
   }
 
   // Fetch new token process
-  requestCopy.method = 'POST';
-  requestCopy.headers['content-type'] = 'application/x-www-form-urlencoded';
-  requestCopy.headers['Accept'] = 'application/json';
+  let axiosRequestConfig = {};
+  axiosRequestConfig.method = 'POST';
+  axiosRequestConfig.headers = {
+    'content-type': 'application/x-www-form-urlencoded',
+    'Accept': 'application/json',
+  };
   if (credentialsPlacement === "basic_auth_header") {
-    requestCopy.headers['Authorization'] = `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`;
+    axiosRequestConfig.headers['Authorization'] = `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`;
   }
   const data = {
     grant_type: 'client_credentials',
@@ -347,17 +368,22 @@ const getOAuth2TokenUsingClientCredentials = async ({ request, collectionUid, fo
   if (scope && scope.trim() !== '') {
     data.scope = scope;
   }
-  requestCopy.data = qs.stringify(data);
-  requestCopy.url = url;
-  requestCopy.responseType = 'arraybuffer';
+  axiosRequestConfig.data = qs.stringify(data);
+  axiosRequestConfig.url = url;
+  axiosRequestConfig.responseType = 'arraybuffer';
   let debugInfo = { data: [] };
   try {
     const { proxyMode, proxyConfig, httpsAgentRequestFields, interpolationOptions } = certsAndProxyConfig;
     const axiosInstance = makeAxiosInstance({ proxyMode, proxyConfig, httpsAgentRequestFields, interpolationOptions });
-    let responseInfo, parsedResponseData;
+    let requestInfo, responseInfo, parsedResponseData;
     try {
-      const response = await axiosInstance(requestCopy);
+      const response = await axiosInstance(axiosRequestConfig);
       parsedResponseData = safeParseJSONBuffer(response.data);
+      requestInfo = {
+        url: response.config?.url,
+        headers: response.config?.headers,
+        data: response.config?.data
+      };
       responseInfo = {
         url: response?.url,
         status: response?.status,
@@ -370,6 +396,11 @@ const getOAuth2TokenUsingClientCredentials = async ({ request, collectionUid, fo
     }
     catch(error) {
       if (error.response) {
+        requestInfo = {
+          url: error?.config?.url,
+          headers: error?.config?.headers,
+          data: error?.config?.data
+        };
         responseInfo = {
           url: error?.response?.url,
           status: error?.response?.status,
@@ -381,11 +412,16 @@ const getOAuth2TokenUsingClientCredentials = async ({ request, collectionUid, fo
           error: safeStringifyJSON(safeParseJSONBuffer(error?.response?.data)),
         };
       }
-      else if(error?.code) {
+      else if (error?.code) {
+        requestInfo = {
+          url: axiosRequestConfig?.url,
+          headers: axiosRequestConfig?.headers,
+          data: axiosRequestConfig?.data
+        };
         responseInfo = {
           status: '-',
           statusText: error?.code,
-          headers: error?.config?.headers,
+          headers: {},
           data: safeStringifyJSON(error?.errors),
           timeline: error?.response?.timeline
         };
@@ -401,10 +437,10 @@ const getOAuth2TokenUsingClientCredentials = async ({ request, collectionUid, fo
     const axiosMainRequest = {
       requestId: Date.now().toString(),
       request: {
-        url: url,
+        url: requestInfo?.url,
         method: 'POST',
-        headers: requestCopy?.headers,
-        data: requestCopy?.data,
+        headers: requestInfo?.headers,
+        data: requestInfo?.data,
         error: null
       },
       response: {
@@ -500,11 +536,14 @@ const getOAuth2TokenUsingPasswordCredentials = async ({ request, collectionUid, 
   }
 
   // Fetch new token process
-  requestCopy.method = 'POST';
-  requestCopy.headers['content-type'] = 'application/x-www-form-urlencoded';
-  requestCopy.headers['Accept'] = 'application/json';
+  let axiosRequestConfig = {};
+  axiosRequestConfig.method = 'POST';
+  axiosRequestConfig.headers = {
+    'content-type': 'application/x-www-form-urlencoded',
+    'Accept': 'application/json',
+  };
   if (credentialsPlacement === "basic_auth_header") {
-    requestCopy.headers['Authorization'] = `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`;
+    axiosRequestConfig.headers['Authorization'] = `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`;
   }
   const data = {
     grant_type: 'password',
@@ -518,17 +557,22 @@ const getOAuth2TokenUsingPasswordCredentials = async ({ request, collectionUid, 
   if (scope && scope.trim() !== '') {
     data.scope = scope;
   }
-  requestCopy.data = qs.stringify(data);
-  requestCopy.url = url;
-  requestCopy.responseType = 'arraybuffer';
+  axiosRequestConfig.data = qs.stringify(data);
+  axiosRequestConfig.url = url;
+  axiosRequestConfig.responseType = 'arraybuffer';
   let debugInfo = { data: [] };
   try {
     const { proxyMode, proxyConfig, httpsAgentRequestFields, interpolationOptions } = certsAndProxyConfig;
     const axiosInstance = makeAxiosInstance({ proxyMode, proxyConfig, httpsAgentRequestFields, interpolationOptions });
-    let responseInfo, parsedResponseData;
+    let requestInfo, responseInfo, parsedResponseData;
     try {
-      const response = await axiosInstance(requestCopy);
+      const response = await axiosInstance(axiosRequestConfig);
       parsedResponseData = safeParseJSONBuffer(response.data);
+      requestInfo = {
+        url: response.config?.url,
+        headers: response.config?.headers,
+        data: response.config?.data
+      };
       responseInfo = {
         url: response?.url,
         status: response?.status,
@@ -541,6 +585,11 @@ const getOAuth2TokenUsingPasswordCredentials = async ({ request, collectionUid, 
     }
     catch(error) {
       if (error.response) {
+        requestInfo = {
+          url: error?.config?.url,
+          headers: error?.config?.headers,
+          data: error?.config?.data
+        };
         responseInfo = {
           url: error?.response?.url,
           status: error?.response?.status,
@@ -553,10 +602,15 @@ const getOAuth2TokenUsingPasswordCredentials = async ({ request, collectionUid, 
         };
       }
       else if(error?.code) {
+        requestInfo = {
+          url: axiosRequestConfig?.url,
+          headers: axiosRequestConfig?.headers,
+          data: axiosRequestConfig?.data
+        };
         responseInfo = {
           status: '-',
           statusText: error?.code,
-          headers: error?.config?.headers,
+          headers: {},
           data: safeStringifyJSON(error?.errors),
           timeline: error?.response?.timeline
         };
@@ -619,20 +673,29 @@ const refreshOauth2Token = async ({ requestCopy, collectionUid, certsAndProxyCon
     if (clientSecret) {
       data.client_secret = clientSecret;
     }
-    requestCopy.method = 'POST';
-    requestCopy.headers['content-type'] = 'application/x-www-form-urlencoded';
-    requestCopy.headers['Accept'] = 'application/json';
-    requestCopy.data = qs.stringify(data);
-    requestCopy.url = url;
-    requestCopy.responseType = 'arraybuffer';
+    let axiosRequestConfig = {};
+    axiosRequestConfig.method = 'POST';
+    axiosRequestConfig.headers = {
+      'content-type': 'application/x-www-form-urlencoded',
+      'Accept': 'application/json',
+      'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`
+    };
+    axiosRequestConfig.data = qs.stringify(data);
+    axiosRequestConfig.url = url;
+    axiosRequestConfig.responseType = 'arraybuffer';
     let debugInfo = { data: [] };
     try {
       const { proxyMode, proxyConfig, httpsAgentRequestFields, interpolationOptions } = certsAndProxyConfig;
       const axiosInstance = makeAxiosInstance({ proxyMode, proxyConfig, httpsAgentRequestFields, interpolationOptions });
-      let responseInfo, parsedResponseData;
+      let requestInfo, responseInfo, parsedResponseData;
       try {
-        const response = await axiosInstance(requestCopy);
+        const response = await axiosInstance(axiosRequestConfig);
         parsedResponseData = safeParseJSONBuffer(response.data);
+        requestInfo = {
+          url: response.config?.url,
+          headers: response.config?.headers,
+          data: response.config?.data
+        };
         responseInfo = {
           url: response?.url,
           status: response?.status,
@@ -645,6 +708,11 @@ const refreshOauth2Token = async ({ requestCopy, collectionUid, certsAndProxyCon
       }
       catch(error) {
         if (error.response) {
+          requestInfo = {
+            url: error?.config?.url,
+            headers: error?.config?.headers,
+            data: error?.config?.data
+          };
           responseInfo = {
             url: error?.response?.url,
             status: error?.response?.status,
@@ -657,10 +725,15 @@ const refreshOauth2Token = async ({ requestCopy, collectionUid, certsAndProxyCon
           };
         }
         else if(error?.code) {
+          requestInfo = {
+            url: axiosRequestConfig?.url,
+            headers: axiosRequestConfig?.headers,
+            data: axiosRequestConfig?.data
+          };
           responseInfo = {
             status: '-',
             statusText: error?.code,
-            headers: error?.config?.headers,
+            headers: {},
             data: safeStringifyJSON(error?.errors),
             timeline: error?.response?.timeline
           };
