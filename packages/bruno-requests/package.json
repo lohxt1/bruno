@@ -39,6 +39,6 @@
   },
   "dependencies": {
     "@types/qs": "^6.9.18",
-    "axios": "^1.9.0"
+    "axios": "^1.12.0"
   }
 }
